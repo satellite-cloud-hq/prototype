@@ -1,0 +1,11 @@
+services:
+
+  console:
+
+  grafana:
+
+  logdb:
+
+  orchestrator:
+
+  simulator:
