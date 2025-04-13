@@ -1,12 +1,10 @@
 services:
 
-  # console:
+  # web-console:
 
   # grafana:
 
   # logdb:
-
-  # orchestrator:
 
   simulator:
     container_name: simulator
