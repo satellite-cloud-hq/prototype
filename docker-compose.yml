@@ -1,11 +1,17 @@
 services:
 
-  console:
+  # web-console:
 
-  grafana:
+  # grafana:
 
-  logdb:
-
-  orchestrator:
+  # logdb:
 
   simulator:
+    container_name: simulator
+    build:
+      context: ./simulator
+      dockerfile: Dockerfile
+    ports:
+      - "8900:8900"
+      - "8910:8910"
+    tty: true
