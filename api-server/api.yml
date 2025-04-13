@@ -1,0 +1,235 @@
+openapi: "3.0.3"
+
+# build with: redoc-cli bundle api.yml -o api.html
+
+info:
+  title: "API"
+  version: "1.0.0"
+
+paths:
+  /schedule:
+    post:
+      summary: "スケジュール取得"
+      description: "指定した条件でスケジューリングした結果を取得する．"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                condition:
+                  type: string
+                  format: binary
+                  description: "条件設定ファイル"
+      responses:
+        "200":
+          description: "スケジュール情報"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  start_date_time:
+                    type: string
+                    format: date-time
+                    example: "2023-10-01T00:00:00Z"
+                  end_date_time:
+                    type: string
+                    format: date-time
+                    example: "2023-10-01T00:00:00Z"
+                  passes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Pass"
+
+  /simulations:
+    post:
+      summary: "シミュレーション実行"
+      description: "新規シミュレーションを実行する．"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                condition:
+                  type: string
+                  format: binary
+                  description: "条件設定ファイル"
+                app:
+                  type: string
+                  format: binary
+                  description: "アプリケーションファイル（pythonソースコード）"
+      responses:
+        "200":
+          description: "シミュレーション情報"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Simulation"
+
+
+  /simulations/{simulation_id}:
+    get:
+      summary: "シミュレーション情報取得"
+      description: "指定したシミュレーションの情報を取得する．"
+      parameters:
+        - name: simulation_id
+          in: path
+          required: true
+          description: "シミュレーションID"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "シミュレーション情報"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Simulation"
+
+
+  /resources/satellites:
+    get:
+      summary: "衛星一覧取得"
+      description: "全ての衛星を取得する．"
+      responses:
+        "200":
+          description: "衛星一覧"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    $ref: "#/components/schemas/Satellite"
+
+
+  /resources/ground_stations:
+    get:
+      summary: "地上局一覧取得"
+      description: "全ての地上局を取得する．"
+      responses:
+        "200":
+          description: "地上局一覧"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    $ref: "#/components/schemas/GroundStation"
+
+
+components:
+  schemas:
+    Simulation:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1234567890"
+        status:
+          type: string
+          enum: ["running", "completed", "stopping", "failed"]
+          example: "running"
+
+    Pass:
+      type: object
+      description: "衛星パス"
+      properties:
+        id:
+          type: string
+          example: "1234567890"
+        start_date_time:
+          type: string
+          format: date-time
+          example: "2023-10-01T00:00:00Z"
+        end_date_time:
+          type: string
+          format: date-time
+          example: "2023-10-01T00:00:00Z"
+        satellite:
+          $ref: "#/components/schemas/Satellite"
+
+    Satellite:
+      type: object
+      description: "衛星情報"
+      properties:
+        id:
+          type: string
+          example: "1234567890"
+        name:
+          type: string
+          example: "Satellite A"
+        orbit:
+          $ref: "#/components/schemas/Orbit"
+
+    GroundStation:
+      type: object
+      description: "地上局情報"
+      properties:
+        id:
+          type: string
+          example: "1234567890"
+        name:
+          type: string
+          example: "Ground Station A"
+        latitude:
+          type: number
+          format: double
+          description: "緯度 [rad]"
+          example: 0.7854
+        longitude:
+          type: number
+          format: double
+          description: "経度 [rad]"
+          example: 1.5708
+        altitude:
+          type: number
+          format: double
+          description: "標高 [m]"
+          example: 100.0
+
+    Orbit:
+      type: object
+      description: "軌道6要素"
+      properties:
+        epoch:
+          type: string
+          format: date-time
+          description: "元期"
+          example: "2023-10-01T00:00:00Z"
+        inclination:
+          type: number
+          format: double
+          description: "軌道傾斜角 [rad]"
+          example: 0.9006
+        raan:
+          type: number
+          format: double
+          description: "昇交点赤経 [rad]"
+          example: 5.837
+        eccentricity:
+          type: number
+          format: double
+          description: "軌道離心率 [-]"
+          example: 0.0004
+        argument_of_perigee:
+          type: number
+          format: double
+          description: "近地点引数 [rad]"
+          example: 6.126
+        mean_anomaly:
+          type: number
+          format: double
+          description: "平均近点角 [rad]"
+          example: 1.739
+        mean_motion:
+          type: number
+          format: double
+          description: "平均運動 [/day]"
+          example: 15.4
+        
