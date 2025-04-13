@@ -1,5 +1,7 @@
 openapi: "3.0.3"
 
+# build with: redoc-cli bundle api.yml -o api.html
+
 info:
   title: "API"
   version: "1.0.0"
