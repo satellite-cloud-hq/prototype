@@ -135,7 +135,7 @@ export default function App() {
           />
         </Stack>
         <Stack direction="column">
-          <Typography>Condition File</Typography>
+          <Typography>App File</Typography>
           <TextField
             type="file"
             onChange={handleSimulationAppFileChange}
