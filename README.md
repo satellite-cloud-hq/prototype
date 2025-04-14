@@ -17,6 +17,13 @@ $ docker exec -it <CONTAINER_ID> /bin/bash
 ```
 http://localhost:8900/devtools/ からテレコマを確認
 
+### webconsole
+```
+$ cd web-console
+$ npm install # 初回実行時のみ
+$ npm run dev
+```
+
 ## ブランチ
 `main`を最新版とする．
 項目ごとに`feature/**`で開発し，`main`にPull Requestを送る．
