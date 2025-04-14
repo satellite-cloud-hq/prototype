@@ -1,6 +1,28 @@
 services:
 
-  # web-console:
+  api-server:
+    container_name: api-server
+    build:
+      context: ./api-server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" # APIサーバーをホストするポート
+    volumes:
+      - ./api-server:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  web-console:
+    container_name: web-console
+    build:
+      context: ./web-console
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173" # フロントエンドをホストするポート
+    volumes:
+      - ./web-console:/app
+    environment:
+      - CHOKIDAR_USEPOLLING=true # ホットリロード用
 
   # grafana:
 
@@ -15,3 +37,4 @@ services:
       - "8900:8900"
       - "8910:8910"
     tty: true
+    platform: linux/arm64 # ホストのプラットフォームに合わせる

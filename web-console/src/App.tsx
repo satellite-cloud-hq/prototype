@@ -2,6 +2,10 @@ import { Button, Stack, Typography, TextField } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
 
+const apiClient = axios.create({
+  baseURL: "http://0.0.0.0:8000", // Docker Compose のサービス名を使用
+});
+
 export default function App() {
   const [response, setResponse] = useState("");
 
@@ -22,7 +26,7 @@ export default function App() {
       const formData = new FormData();
       formData.append("condition", scheduleConditionfile); // ファイルを追加
 
-      const res = await axios.post("http://localhost:8000/schedule", formData, { // "0.0.0.0:8900"
+      const res = await apiClient.post("/schedule", formData, { // "0.0.0.0:8900"
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -58,7 +62,7 @@ export default function App() {
       formData.append("condition", simulationConditionfile);
       formData.append("app", simulationAppfile);
 
-      const res = await axios.post("http://localhost:8000/simulations", formData, { // "0.0.0.0:8900"
+      const res = await apiClient.post("/simulations", formData, { // "0.0.0.0:8900"
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -79,7 +83,7 @@ export default function App() {
   };
   const handleSimulationsGet = async () => {
     try {
-      const res = await axios.get(`http://localhost:8000/simulations/${simulationId}`);
+      const res = await apiClient.get(`/simulations/${simulationId}`);
       setResponse(JSON.stringify(res.data, null, 2));
     } catch (error) {
       console.error(error);
@@ -90,7 +94,7 @@ export default function App() {
   // GET /resources/satellites
   const handleReousrcesSatellitesGet = async () => {
     try {
-      const res = await axios.get(`http://localhost:8000/resources/satellites`);
+      const res = await apiClient.get(`/resources/satellites`);
       setResponse(JSON.stringify(res.data, null, 2));
     } catch (error) {
       console.error(error);
@@ -101,7 +105,7 @@ export default function App() {
   // GET /resources/ground_stations
   const handleReousrcesGroundStationsGet = async () => {
     try {
-      const res = await axios.get(`http://localhost:8000/resources/ground_stations`);
+      const res = await apiClient.get(`/resources/ground_stations`);
       setResponse(JSON.stringify(res.data, null, 2));
     } catch (error) {
       console.error(error);

@@ -7,6 +7,7 @@
 $ git submodule update --init --recursive
 $ docker-compose up -d
 ```
+http://localhost:5173/ からwebconsoleを確認
 
 ### シミュレータ
 ```
@@ -17,13 +18,6 @@ $ docker exec -it <CONTAINER_ID> /bin/bash
 ```
 http://localhost:8900/devtools/ からテレコマを確認
 
-### webconsole
-```
-$ cd web-console
-$ npm install # 初回実行時のみ
-$ npm run dev
-$ npm run backend
-```
 
 ## ブランチ
 `main`を最新版とする．
