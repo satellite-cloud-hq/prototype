@@ -22,6 +22,7 @@ http://localhost:8900/devtools/ からテレコマを確認
 $ cd web-console
 $ npm install # 初回実行時のみ
 $ npm run dev
+$ num run backend
 ```
 
 ## ブランチ
