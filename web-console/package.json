@@ -7,9 +7,15 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backend": "cd backend && uvicorn rest-api:app --reload"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@iconify/react": "^5.2.1",
+    "@mui/material": "^7.0.2",
+    "axios": "^1.8.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
