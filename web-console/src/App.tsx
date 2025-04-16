@@ -2,6 +2,7 @@ import { Button, Stack, Typography, TextField } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
 import MonacoEditor from "./components/MonacoEditor";
+import Simulation from "./components/Simulation";
 
 const apiClient = axios.create({
   baseURL: "http://localhost:8000/", // Docker Compose のサービス名を使用
@@ -129,6 +130,7 @@ export default function App() {
   return (
     <Stack direction="column" spacing={2} sx={{ alignItems: "flex-start" }}>
       <MonacoEditor />
+      <Simulation />
       <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
         <Stack direction="column">
           <Typography>Condition File</Typography>
