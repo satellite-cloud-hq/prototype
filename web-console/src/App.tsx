@@ -150,7 +150,11 @@ export default function App() {
         <TerminalScreen />
       </Grid>
       <Grid size={6} sx={{ height: "50vh" }}>
-        <Simulation />
+        <iframe
+          src="http://localhost:3000/public-dashboards/6fefc76edf5c450ba3a4e2d27508ed0f"
+          width="100%"
+          height="100%"
+        ></iframe>
       </Grid>
     </Grid>
   );
