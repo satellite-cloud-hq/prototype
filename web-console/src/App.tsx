@@ -1,4 +1,4 @@
-import { Button, Stack, Typography, TextField } from "@mui/material";
+import { Box, Grid, Button, Stack, Typography, TextField } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
 import MonacoEditor from "./components/MonacoEditor";
@@ -128,97 +128,29 @@ export default function App() {
   };
 
   return (
-    <Stack direction="column" spacing={2} sx={{ alignItems: "flex-start" }}>
-      <MonacoEditor />
-      <Simulation />
-      <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-        <Stack direction="column">
-          <Typography>Condition File</Typography>
-          <TextField
-            type="file"
-            onChange={handleScheduleConditionFileChange}
-            // inputProps={{ accept: ".txt,.json" }} // 必要に応じてファイル形式を制限
-          />
-        </Stack>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSchedulePost}
-        >
-          POST /schedule
-        </Button>
-      </Stack>
-
-      <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-        <Stack direction="column">
-          <Typography>Condition File</Typography>
-          <TextField
-            type="file"
-            onChange={handleSimulationConditionFileChange}
-            // inputProps={{ accept: ".txt,.json" }} // 必要に応じてファイル形式を制限
-          />
-        </Stack>
-        <Stack direction="column">
-          <Typography>App File</Typography>
-          <TextField
-            type="file"
-            onChange={handleSimulationAppFileChange}
-            // inputProps={{ accept: ".txt,.json" }} // 必要に応じてファイル形式を制限
-          />
-        </Stack>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSimulationsPost}
-        >
-          POST /simulations
-        </Button>
-      </Stack>
-
-      <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-        <Stack direction="column">
-          <Typography>Simulation ID</Typography>
-          <TextField
-            type="number"
-            onChange={handleSimulationIdChange}
-            value={simulationId}
-          />
-        </Stack>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSimulationsGet}
-        >
-          GET /simulations/:id
-        </Button>
-      </Stack>
-
-      <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleReousrcesSatellitesGet}
-        >
-          GET /resources/satellites
-        </Button>
-      </Stack>
-
-      <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleReousrcesGroundStationsGet}
-        >
-          GET /resources/ground_stations
-        </Button>
-      </Stack>
-
-      <Typography variant="h4" component="h1" gutterBottom>
-        Response:
-      </Typography>
-      <Typography variant="body1" component="pre" gutterBottom>
-        {response}
-      </Typography>
-    </Stack>
+    // <Stack direction="column" spacing={2} sx={{ alignItems: "flex-start" }}>
+    <Grid
+      container
+      sx={{
+        height: "100vh",
+        width: "100vw",
+        margin: 0,
+        padding: 0,
+        overflow: "hidden",
+      }}
+    >
+      <Grid size={6} sx={{ height: "50vh" }}>
+        <MonacoEditor />
+      </Grid>
+      <Grid size={6} sx={{ height: "50vh" }}>
+        <Simulation />
+      </Grid>
+      <Grid size={6} sx={{ height: "50vh" }}>
+        <Simulation />
+      </Grid>
+      <Grid size={6} sx={{ height: "50vh" }}>
+        <Simulation />
+      </Grid>
+    </Grid>
   );
 }

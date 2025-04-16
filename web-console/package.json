@@ -16,10 +16,12 @@
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "@xterm/xterm": "^5.5.0",
     "axios": "^1.8.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-globe.gl": "^2.33.2"
+    "react-globe.gl": "^2.33.2",
+    "satellite.js": "^6.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

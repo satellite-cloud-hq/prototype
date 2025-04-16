@@ -39,8 +39,13 @@ export default function MonacoEditor() {
   };
 
   return (
-    <>
-      <Stack direction="row" spacing={2} mb={2}>
+    <div style={{ width: "100%", height: "100%", position: "relative", display: "flex", flexDirection: "column" }}>
+      <Stack
+        direction="row"
+        spacing={2}
+        mb={2}
+        sx={{ justifyContent: "flex-start" }}
+      >
         <ButtonGroup
           variant="contained"
           aria-label="outlined primary button group"
@@ -99,15 +104,18 @@ export default function MonacoEditor() {
           </Button>
         </ButtonGroup>
       </Stack>
-      <Editor
-        width="50%"
-        height="50vh"
-        defaultLanguage={file.language}
-        theme="vs-dark"
-        path={file.name}
-        defaultValue={file.value}
-        onChange={handleEditorChange}
-      />
-    </>
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <Editor
+          defaultLanguage={file.language}
+          theme="vs-dark"
+          path={file.name}
+          defaultValue={file.value}
+          onChange={handleEditorChange}
+          options={{
+            automaticLayout: true,
+          }}
+        />
+      </div>
+    </div>
   );
 }

@@ -76,5 +76,19 @@ const handleSimulationsPost = async ({
     throw error;
   }
 };
+// GET /resources/satellites
+const handleReousrcesSatellitesGet = async () => {
+  try {
+    const res = await apiClient.get(`/resources/satellites`);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
 
-export { handleSchedulePost, handleSimulationsPost };
+export {
+  handleSchedulePost,
+  handleSimulationsPost,
+  handleReousrcesSatellitesGet,
+};
