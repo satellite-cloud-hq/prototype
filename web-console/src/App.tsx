@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import MonacoEditor from "./components/MonacoEditor";
 import Simulation from "./components/Simulation";
+import TerminalScreen from "./components/TerminalScreen";
 
 const apiClient = axios.create({
   baseURL: "http://localhost:8000/", // Docker Compose のサービス名を使用
@@ -146,7 +147,7 @@ export default function App() {
         <Simulation />
       </Grid>
       <Grid size={6} sx={{ height: "50vh" }}>
-        <Simulation />
+        <TerminalScreen />
       </Grid>
       <Grid size={6} sx={{ height: "50vh" }}>
         <Simulation />
