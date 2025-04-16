@@ -133,7 +133,7 @@ components:
           example: "1234567890"
         status:
           type: string
-          enum: ["running", "completed", "stopping", "failed"]
+          enum: ["running", "completed", "stopped", "failed"]
           example: "running"
 
     Pass:
