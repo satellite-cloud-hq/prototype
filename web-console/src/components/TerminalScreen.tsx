@@ -23,6 +23,7 @@ export default function TerminalScreen() {
     if (terminalRef.current) {
       newTerminal.open(terminalRef.current);
       newTerminal.write("Welcome to the terminal!\r\n$ ");
+      setTerminal(newTerminal);
     }
   };
 
