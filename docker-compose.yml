@@ -36,5 +36,6 @@ services:
     ports:
       - "8900:8900"
       - "8910:8910"
+      - "8920:80"
     tty: true
     platform: linux/arm64 # ホストのプラットフォームに合わせる
