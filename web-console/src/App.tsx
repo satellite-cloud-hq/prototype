@@ -1,17 +1,21 @@
 import { Button, Stack, Typography, TextField } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
+import MonacoEditor from "./components/MonacoEditor";
 
 const apiClient = axios.create({
-  baseURL: "http://0.0.0.0:8000", // Docker Compose のサービス名を使用
+  baseURL: "http://localhost:8000/", // Docker Compose のサービス名を使用
 });
 
 export default function App() {
   const [response, setResponse] = useState("");
 
   // POST /schedule
-  const [scheduleConditionfile, setScheduleConditionFile] = useState<File | null>(null);
-  const handleScheduleConditionFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const [scheduleConditionfile, setScheduleConditionFile] =
+    useState<File | null>(null);
+  const handleScheduleConditionFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files && event.target.files.length > 0) {
       setScheduleConditionFile(event.target.files[0]);
     }
@@ -26,7 +30,8 @@ export default function App() {
       const formData = new FormData();
       formData.append("condition", scheduleConditionfile); // ファイルを追加
 
-      const res = await apiClient.post("/schedule", formData, { // "0.0.0.0:8900"
+      const res = await apiClient.post("/schedule", formData, {
+        // "0.0.0.0:8900"
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -39,14 +44,19 @@ export default function App() {
   };
 
   // POST /simulations
-  const [simulationConditionfile, setSimulationConditionFile] = useState<File | null>(null);
+  const [simulationConditionfile, setSimulationConditionFile] =
+    useState<File | null>(null);
   const [simulationAppfile, setSimulationAppFile] = useState<File | null>(null);
-  const handleSimulationConditionFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSimulationConditionFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files && event.target.files.length > 0) {
       setSimulationConditionFile(event.target.files[0]);
     }
   };
-  const handleSimulationAppFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSimulationAppFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files && event.target.files.length > 0) {
       setSimulationAppFile(event.target.files[0]);
     }
@@ -62,7 +72,8 @@ export default function App() {
       formData.append("condition", simulationConditionfile);
       formData.append("app", simulationAppfile);
 
-      const res = await apiClient.post("/simulations", formData, { // "0.0.0.0:8900"
+      const res = await apiClient.post("/simulations", formData, {
+        // "0.0.0.0:8900"
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -76,7 +87,9 @@ export default function App() {
 
   // GET /simulations/:id
   const [simulationId, setSimulationId] = useState<number>(1);
-  const handleSimulationIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSimulationIdChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const value = event.target.value;
     if (value === "") return;
     setSimulationId(parseInt(value));
@@ -115,6 +128,7 @@ export default function App() {
 
   return (
     <Stack direction="column" spacing={2} sx={{ alignItems: "flex-start" }}>
+      <MonacoEditor />
       <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
         <Stack direction="column">
           <Typography>Condition File</Typography>
@@ -124,7 +138,11 @@ export default function App() {
             // inputProps={{ accept: ".txt,.json" }} // 必要に応じてファイル形式を制限
           />
         </Stack>
-        <Button variant="contained" color="primary" onClick={handleSchedulePost}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSchedulePost}
+        >
           POST /schedule
         </Button>
       </Stack>
@@ -146,7 +164,11 @@ export default function App() {
             // inputProps={{ accept: ".txt,.json" }} // 必要に応じてファイル形式を制限
           />
         </Stack>
-        <Button variant="contained" color="primary" onClick={handleSimulationsPost}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSimulationsPost}
+        >
           POST /simulations
         </Button>
       </Stack>
@@ -160,19 +182,31 @@ export default function App() {
             value={simulationId}
           />
         </Stack>
-        <Button variant="contained" color="primary" onClick={handleSimulationsGet}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSimulationsGet}
+        >
           GET /simulations/:id
         </Button>
       </Stack>
 
       <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-        <Button variant="contained" color="primary" onClick={handleReousrcesSatellitesGet}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleReousrcesSatellitesGet}
+        >
           GET /resources/satellites
         </Button>
       </Stack>
 
       <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-        <Button variant="contained" color="primary" onClick={handleReousrcesGroundStationsGet}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleReousrcesGroundStationsGet}
+        >
           GET /resources/ground_stations
         </Button>
       </Stack>
