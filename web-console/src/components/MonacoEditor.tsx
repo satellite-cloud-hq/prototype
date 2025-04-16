@@ -39,7 +39,15 @@ export default function MonacoEditor() {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Stack
         direction="row"
         spacing={2}
@@ -74,6 +82,7 @@ export default function MonacoEditor() {
               })
                 .then((res) => {
                   console.log("Response:", res);
+                  alert("App file uploaded successfully");
                 })
                 .catch((error) => {
                   alert("Error uploading app file."); //TODO show error message
@@ -93,6 +102,7 @@ export default function MonacoEditor() {
               handleSchedulePost(files["config.yaml"].value)
                 .then((res) => {
                   console.log("Response:", res);
+                  alert("Config file uploaded successfully");
                 })
                 .catch((error) => {
                   alert("Error uploading config file."); //TODO show error message
