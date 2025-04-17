@@ -19,7 +19,7 @@ export default function App() {
         width: "100vw",
         margin: 0,
         padding: 0,
-        overflow: "hidden",
+        // overflow: "hidden",
       }}
     >
       <Grid size={6} sx={{ height: "50vh" }}>
@@ -28,7 +28,7 @@ export default function App() {
       <Grid size={6} sx={{ height: "50vh" }}>
         <Simulation />
       </Grid>
-      <Grid size={6} sx={{ height: "50vh" }}>
+      <Grid size={6} sx={{ height: "30vh" }}>
         <TerminalScreen />
       </Grid>
       <Grid size={6} sx={{ height: "50vh" }}>

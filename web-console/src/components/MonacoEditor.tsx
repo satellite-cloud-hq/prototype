@@ -6,7 +6,7 @@ import { PlayArrow, Stop } from "@mui/icons-material";
 import Editor from "@monaco-editor/react";
 import { handleSchedulePost, handleSimulationsPost } from "../utils/data";
 import { useAtom } from "jotai";
-import { idAtom } from "../utils/atoms";
+import { idAtom, outputLogAtom } from "../utils/atoms";
 
 const defaultFiles = {
   "app.py": {
@@ -41,6 +41,7 @@ export default function MonacoEditor() {
   };
 
   const [, setId] = useAtom(idAtom);
+  const [outputLog, setOutputLog] = useAtom(outputLogAtom);
 
   return (
     <div
@@ -79,23 +80,32 @@ export default function MonacoEditor() {
           <IconButton
             aria-label="play"
             color="primary"
-            onClick={() => {
-              handleSimulationsPost({
-                conditionFileContent: file["config.yaml"],
-                appFileContent: files["app.py"].value,
-              })
-                .then((res) => {
-                  console.log("Response:", res);
-                  alert("App file uploaded successfully");
-                  const { id, status } = res.data;
-                  console.log("Simulation ID:", id);
-                  console.log("Simulation Status:", status);
-                  setId(id);
-                })
-                .catch((error) => {
-                  alert("Error uploading app file."); //TODO show error message
-                  console.error("Error:", error);
+            onClick={async () => {
+              try {
+                const res = await handleSimulationsPost({
+                  conditionFileContent: file["config.yaml"],
+                  appFileContent: files["app.py"].value,
                 });
+
+                console.log("Response:", res);
+                alert("App file uploaded successfully");
+                const { id, status } = res.data;
+                console.log("Simulation ID:", id);
+                console.log("Simulation Status:", status);
+                setId(id);
+
+                const evtSource = new EventSource(
+                  `http://localhost:8000/simulations/${id}/output`
+                );
+                evtSource.onmessage = (event) => {
+                  const data = event.data;
+                  console.log("Received data:", data);
+                  setOutputLog(`${data} (id: ${id}) \n`);
+                };
+              } catch (error) {
+                alert("Error uploading app file."); //TODO show error message
+                console.error("Error:", error);
+              }
             }}
           >
             <PlayArrow />

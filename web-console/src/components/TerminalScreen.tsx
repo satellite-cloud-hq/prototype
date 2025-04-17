@@ -1,20 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Terminal } from "@xterm/xterm";
+import { FitAddon } from "xterm-addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { useAtom } from "jotai";
-import { idAtom } from "../utils/atoms";
+import { idAtom, outputLogAtom } from "../utils/atoms";
 
 export default function TerminalScreen() {
-  const terminalRef = useRef<HTMLDivElement>(null);
+  const terminalRef = useRef<Terminal>(null);
 
-  const [terminal, setTerminal] = useState<Terminal | null>(null);
-
-  const [id, setId] = useAtom(idAtom);
+  const [outputLog, setOutputLog] = useAtom(outputLogAtom);
 
   const disposeTerminal = () => {
-    if (terminal) {
-      terminal.dispose();
-      setTerminal(null);
+    if (terminalRef.current) {
+      terminalRef.current.dispose();
+      terminalRef.current = null;
     }
   };
 
@@ -24,10 +23,13 @@ export default function TerminalScreen() {
       cursorBlink: true,
       fontSize: 14,
     });
-    if (terminalRef.current) {
-      newTerminal.open(terminalRef.current);
+    const fitAddon = new FitAddon();
+    newTerminal.loadAddon(fitAddon);
+    if (document.getElementById("terminal") !== null) {
+      newTerminal.open(document.getElementById("terminal")!);
+      fitAddon.fit();
       newTerminal.write("Welcome to the terminal!\r\n$ ");
-      setTerminal(newTerminal);
+      terminalRef.current = newTerminal;
     }
   };
 
@@ -42,9 +44,16 @@ export default function TerminalScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    if (terminalRef.current && outputLog) {
+      terminalRef.current.write(outputLog);
+      setOutputLog("");
+    }
+  }, [outputLog]);
+
   return (
     <div
-      ref={terminalRef}
+      id="terminal"
       style={{
         backgroundColor: "#000",
         padding: "1%",
@@ -53,4 +62,4 @@ export default function TerminalScreen() {
       }}
     />
   );
-}
+} //
