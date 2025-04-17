@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Stack, ButtonGroup, IconButton } from "@mui/material";
 
 import { PlayArrow, Stop } from "@mui/icons-material";
@@ -39,6 +39,17 @@ export default function MonacoEditor() {
       },
     });
   };
+
+  const [evtSource, setEvtSource] = useState<EventSource | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (evtSource) {
+        console.log("Closing EventSource");
+        evtSource.close();
+      }
+    };
+  }, [evtSource]);
 
   const [, setId] = useAtom(idAtom);
   const [outputLog, setOutputLog] = useAtom(outputLogAtom);
@@ -82,6 +93,7 @@ export default function MonacoEditor() {
             color="primary"
             onClick={async () => {
               try {
+                console.log(outputLog);
                 const res = await handleSimulationsPost({
                   conditionFileContent: file["config.yaml"],
                   appFileContent: files["app.py"].value,
@@ -89,19 +101,45 @@ export default function MonacoEditor() {
 
                 console.log("Response:", res);
                 alert("App file uploaded successfully");
-                const { id, status } = res.data;
+                const { id, status } = res;
                 console.log("Simulation ID:", id);
                 console.log("Simulation Status:", status);
                 setId(id);
 
-                const evtSource = new EventSource(
+                const newEvtSource = new EventSource(
                   `http://localhost:8000/simulations/${id}/output`
                 );
-                evtSource.onmessage = (event) => {
-                  const data = event.data;
-                  console.log("Received data:", data);
-                  setOutputLog(`${data} (id: ${id}) \n`);
+                // Add event listeners for specific event types
+                newEvtSource.onopen = () => {
+                  setOutputLog(
+                    (prev) => `${prev}Connection opened (id: ${id})\n`
+                  );
                 };
+
+                newEvtSource.onerror = (error) => {
+                  console.error("SSE connection error:", error);
+                  setOutputLog("Connection error\n");
+                  newEvtSource.close();
+                };
+
+                newEvtSource.addEventListener("stdout", (event) => {
+                  console.log("Stdout:", event.data);
+                  setOutputLog((prev) => `${prev}${event.data} (id: ${id})\n`);
+                });
+
+                newEvtSource.addEventListener("stderr", (event) => {
+                  console.error("Stderr:", event.data);
+                  setOutputLog(
+                    (prev) => `${prev}Error: ${event.data} (id: ${id})\n`
+                  );
+                });
+
+                newEvtSource.addEventListener("done", (event) => {
+                  console.log("Simulation finished:", event.data);
+                  setOutputLog((prev) => `${prev}${event.data} (id: ${id})\n`);
+                  newEvtSource.close();
+                });
+                setEvtSource(newEvtSource);
               } catch (error) {
                 alert("Error uploading app file."); //TODO show error message
                 console.error("Error:", error);
