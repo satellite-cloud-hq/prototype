@@ -1,4 +1,6 @@
 FROM --platform=linux/x86_64 ubuntu:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
 ARG NODE_VERSION=20
 
 # Tools
@@ -13,8 +15,12 @@ RUN apt update --fix-missing && \
     make \
     cmake \
     g++ \
-    g++-multilib
-    
+    g++-multilib \
+    python3 \
+    python3-pip \
+    python3-venv \
+    build-essential
+
 # Use bash for the shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -47,4 +53,19 @@ RUN cmake --build build -j
 WORKDIR /root/aobc-sils/c2a-aobc
 RUN npm install .
 
-CMD npm run devtools:sils
+# CMD npm run devtools:sils
+
+# Runner
+WORKDIR /root/
+COPY /requirements.txt .
+
+RUN python3 -m venv /opt/venv && \
+    . /opt/venv/bin/activate && \
+    pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY /runner_api.py .
+
+# FastAPIサーバーを起動
+CMD ["uvicorn", "runner_api:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
