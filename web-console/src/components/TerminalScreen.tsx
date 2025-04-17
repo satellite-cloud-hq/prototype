@@ -1,11 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
+import { useAtom } from "jotai";
+import { idAtom } from "../utils/atoms";
 
 export default function TerminalScreen() {
   const terminalRef = useRef<HTMLDivElement>(null);
 
   const [terminal, setTerminal] = useState<Terminal | null>(null);
+
+  const [id, setId] = useAtom(idAtom);
 
   const disposeTerminal = () => {
     if (terminal) {
@@ -33,6 +37,9 @@ export default function TerminalScreen() {
     } catch (error) {
       console.error("Error setting up terminal:", error);
     }
+    return () => {
+      disposeTerminal();
+    };
   }, []);
 
   return (
