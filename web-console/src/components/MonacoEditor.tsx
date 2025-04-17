@@ -5,6 +5,8 @@ import { PlayArrow, Stop } from "@mui/icons-material";
 
 import Editor from "@monaco-editor/react";
 import { handleSchedulePost, handleSimulationsPost } from "../utils/data";
+import { useAtom } from "jotai";
+import { idAtom } from "../utils/atoms";
 
 const defaultFiles = {
   "app.py": {
@@ -37,6 +39,8 @@ export default function MonacoEditor() {
       },
     });
   };
+
+  const [, setId] = useAtom(idAtom);
 
   return (
     <div
@@ -83,6 +87,10 @@ export default function MonacoEditor() {
                 .then((res) => {
                   console.log("Response:", res);
                   alert("App file uploaded successfully");
+                  const { id, status } = res.data;
+                  console.log("Simulation ID:", id);
+                  console.log("Simulation Status:", status);
+                  setId(id);
                 })
                 .catch((error) => {
                   alert("Error uploading app file."); //TODO show error message
