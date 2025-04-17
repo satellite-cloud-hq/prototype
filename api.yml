@@ -44,6 +44,21 @@ paths:
                       $ref: "#/components/schemas/Pass"
 
   /simulations:
+    get:
+      summary: "シミュレーション一覧取得"
+      description: "実行中および過去に実行した全てのシミュレーションを取得する．"
+      responses:
+        "200":
+          description: "シミュレーション一覧"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Simulation"
     post:
       summary: "シミュレーション実行"
       description: "新規シミュレーションを実行する．"
@@ -90,6 +105,47 @@ paths:
               schema:
                 $ref: "#/components/schemas/Simulation"
 
+  /simulations/{simulation_id}/output:
+    get:
+      summary: "シミュレーション出力取得"
+      description: "指定したシミュレーションにおけるユーザーアプリの出力を取得する．"
+      parameters:
+        - name: simulation_id
+          in: path
+          required: true
+          description: "シミュレーションID"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Server Sent Events として出力"
+
+  /simulations/{simulation_id}/stop:
+    post:
+      summary: "シミュレーション停止"
+      description: "指定したシミュレーションを停止する．"
+      parameters:
+        - name: simulation_id
+          in: path
+          required: true
+          description: "シミュレーションID"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "シミュレーション情報"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "1234567890"
+                  status:
+                    type: string
+                    enum: ["running", "completed", "stopped", "failed"]
+                    example: "stopped"
 
   /resources/satellites:
     get:
@@ -133,7 +189,7 @@ components:
           example: "1234567890"
         status:
           type: string
-          enum: ["running", "completed", "stopping", "failed"]
+          enum: ["running", "completed", "stopped", "failed"]
           example: "running"
 
     Pass:
