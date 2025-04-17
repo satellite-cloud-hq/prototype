@@ -130,11 +130,14 @@ async def get_simulation(simulation_id: str):
     指定したシミュレーションの情報を取得する．
     '''
     try:
-        # ダミーデータを返す
-        return {
-            'id': simulation_id,
-            'status': 'completed'
-        }
+        if simulation_id not in simluations:
+            raise HTTPException(status_code=404, 
+                                detail=f'Simulation not found: {simulation_id} in {list(simluations.keys())}')
+        sim = simluations[simulation_id]
+        return sim.to_dict()
+
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -183,7 +186,6 @@ async def stop_simulation(simulation_id: str):
 
         sim = simluations[simulation_id]
         sim.stop()
-        del simluations[simulation_id]
         return sim.to_dict()
 
     except HTTPException as e:
