@@ -5,6 +5,8 @@ import MonacoEditor from "./components/MonacoEditor";
 import Simulation from "./components/Simulation";
 import TerminalScreen from "./components/TerminalScreen";
 import Grafana from "./components/Grafana";
+import ThreeJsImplementation from "./components/SimulationRenderer";
+import SimulationPanel from "./components/SimulationPanel";
 
 const apiClient = axios.create({
   baseURL: "http://localhost:8000/", // Docker Compose のサービス名を使用
@@ -26,7 +28,7 @@ export default function App() {
         <MonacoEditor />
       </Grid>
       <Grid size={6} sx={{ height: "50vh" }}>
-        <Simulation />
+        <SimulationPanel />
       </Grid>
       <Grid size={6} sx={{ height: "30vh" }}>
         <TerminalScreen />
