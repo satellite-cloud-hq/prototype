@@ -3,10 +3,12 @@ import { Button, ButtonGroup, Stack } from "@mui/material";
 import {
   handleReousrcesGroundStationsGet,
   handleReousrcesSatellitesGet,
-} from "../utils/data";
+} from "../../utils/data";
 import SimulationRenderer from "./SimulationRenderer";
+import { satellitesType } from "../../utils/types";
 
 export default function SimulationPanel() {
+  const [satellitesList, setSatellitesList] = useState<satellitesType[]>([]);
   return (
     <div
       style={{
@@ -21,6 +23,7 @@ export default function SimulationPanel() {
             handleReousrcesSatellitesGet()
               .then((res) => {
                 console.log(res.items);
+                setSatellitesList(res.items);
                 alert("Satellites fetched successfully");
               })
               .catch((error) => {
@@ -47,7 +50,7 @@ export default function SimulationPanel() {
           Get Ground Stations
         </Button>
       </ButtonGroup>
-      <SimulationRenderer />
+      <SimulationRenderer satellitesData={satellitesList} />
     </div>
   );
 }

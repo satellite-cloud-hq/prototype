@@ -16,6 +16,8 @@
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "@react-three/drei": "^10.0.6",
+    "@react-three/fiber": "^9.1.2",
     "@xterm/xterm": "^5.5.0",
     "axios": "^1.8.4",
     "jotai": "^2.12.3",
