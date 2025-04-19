@@ -4,7 +4,11 @@ import { Button, Stack, ButtonGroup, IconButton } from "@mui/material";
 import { PlayArrow, Stop } from "@mui/icons-material";
 
 import Editor from "@monaco-editor/react";
-import { handleSchedulePost, handleSimulationsPost } from "../utils/data";
+import {
+  handleSchedulePost,
+  handleSimulationsPost,
+  handleSimulationsStopPost,
+} from "../utils/data";
 import { useAtom } from "jotai";
 import { idAtom } from "../utils/atoms";
 
@@ -40,7 +44,7 @@ export default function MonacoEditor() {
     });
   };
 
-  const [, setId] = useAtom(idAtom);
+  const [id, setId] = useAtom(idAtom);
 
   return (
     <div
@@ -100,7 +104,26 @@ export default function MonacoEditor() {
           >
             <PlayArrow />
           </IconButton>
-          <IconButton aria-label="stop" color="error">
+          <IconButton
+            aria-label="stop"
+            color="error"
+            onClick={async () => {
+              if (!id) {
+                alert(
+                  "No simulation ID found. Please start a simulation first."
+                );
+                return;
+              }
+              try {
+                const res = await handleSimulationsStopPost(id);
+                console.log("Response:", res);
+                alert("Simulation stopped successfully");
+              } catch (error) {
+                alert("Error stopping simulation."); //TODO show error message
+                console.error("Error:", error);
+              }
+            }}
+          >
             <Stop />
           </IconButton>
           <Button

@@ -76,6 +76,17 @@ const handleSimulationsPost = async ({
     throw error;
   }
 };
+
+// POST /simulations/:id/stop
+const handleSimulationsStopPost = async (simulationId: string) => {
+  try {
+    const res = await apiClient.post(`/simulations/${simulationId}/stop`);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
 // GET /resources/satellites
 const handleReousrcesSatellitesGet = async () => {
   try {
@@ -112,6 +123,7 @@ const handleReousrcesGroundStationsGet = async () => {
 export {
   handleSchedulePost,
   handleSimulationsPost,
+  handleSimulationsStopPost,
   handleReousrcesSatellitesGet,
   handleSimulationsGet,
   handleReousrcesGroundStationsGet,
