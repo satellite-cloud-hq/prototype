@@ -3,7 +3,7 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { useAtom } from "jotai";
-import { idAtom, outputLogAtom } from "../utils/atoms";
+import { idAtom } from "../utils/atoms";
 
 export default function TerminalScreen() {
   const [id, setId] = useAtom(idAtom);
