@@ -6,9 +6,8 @@ import { useAtom } from "jotai";
 import { idAtom, outputLogAtom } from "../utils/atoms";
 
 export default function TerminalScreen() {
+  const [id, setId] = useAtom(idAtom);
   const terminalRef = useRef<Terminal>(null);
-
-  const [outputLog, setOutputLog] = useAtom(outputLogAtom);
 
   const disposeTerminal = () => {
     if (terminalRef.current) {
@@ -45,11 +44,38 @@ export default function TerminalScreen() {
   }, []);
 
   useEffect(() => {
-    if (terminalRef.current && outputLog) {
-      terminalRef.current.write(outputLog);
-      setOutputLog("");
-    }
-  }, [outputLog]);
+    if (!id || !terminalRef.current) return;
+
+    const newEvtSource = new EventSource(
+      `http://localhost:8000/simulations/${id}/output`
+    );
+
+    newEvtSource.onopen = () => {
+      terminalRef.current?.write("Connected to server" + "\r\n");
+    };
+
+    newEvtSource.onerror = (error) => {
+      terminalRef.current?.write("Connection error: " + error + "\r\n");
+      newEvtSource.close();
+    };
+
+    newEvtSource.addEventListener("stdout", (event) => {
+      terminalRef.current?.write(event.data + "\r\n");
+    });
+
+    newEvtSource.addEventListener("stderr", (event) => {
+      console.error("Stderr:", event.data);
+      terminalRef.current?.write("Error: " + event.data + "\r\n");
+    });
+
+    newEvtSource.addEventListener("done", (event) => {
+      terminalRef.current?.write("Simulation finished: " + event.data + "\r\n");
+      newEvtSource.close();
+    });
+    return () => {
+      newEvtSource.close();
+    };
+  }, [id, terminalRef.current]);
 
   return (
     <div
@@ -62,4 +88,4 @@ export default function TerminalScreen() {
       }}
     />
   );
-} //
+}
