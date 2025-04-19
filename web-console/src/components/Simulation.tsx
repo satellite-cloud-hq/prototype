@@ -1,4 +1,10 @@
-import React, { useCallback, useState, useMemo, useEffect } from "react";
+import React, {
+  useRef,
+  useCallback,
+  useState,
+  useMemo,
+  useEffect,
+} from "react";
 import { Button, ButtonGroup, Stack } from "@mui/material";
 import Globe from "react-globe.gl";
 import {
@@ -6,9 +12,16 @@ import {
   handleReousrcesSatellitesGet,
 } from "../utils/data";
 
+import * as THREE from "three";
+
 export default function Simulation() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const globeEl = useRef<any>(null);
+
+  const [gsData, setGsData] = useState<
+    { lat: number; lng: number; alt: number; name: string; id: string }[]
+  >([]);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -30,6 +43,7 @@ export default function Simulation() {
 
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
+
   return (
     <div
       ref={containerRef}
@@ -56,6 +70,15 @@ export default function Simulation() {
             handleReousrcesGroundStationsGet()
               .then((res) => {
                 console.log(res.items);
+                const gsList = res.items.map((gs) => ({
+                  lat: gs.latitude,
+                  lng: gs.longitude,
+                  alt: 0,
+                  name: gs.name,
+                  id: gs.id,
+                }));
+                setGsData(gsList);
+                console.log(gsList);
                 alert("Ground stations fetched successfully");
               })
               .catch((error) => {
@@ -68,14 +91,44 @@ export default function Simulation() {
         </Button>
       </ButtonGroup>
       <Globe
+        ref={globeEl}
         width={dimensions.width}
         height={dimensions.height}
         globeImageUrl="//cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg"
-        particleLabel="name"
-        particleLat="lat"
-        particleLng="lng"
-        particleAltitude="alt"
-        particlesColor={useCallback(() => "palegreen", [])}
+        labelsData={gsData}
+        labelText={"name"}
+        labelSize={2}
+        labelDotRadius={0.5}
+        customLayerData={[
+          {
+            lat: 80,
+            lng: 80,
+            alt: -0,
+            color: "red",
+            radius: 101,
+          },
+        ]}
+        customThreeObject={(d) => {
+          const plane = new THREE.Mesh(
+            new THREE.PlaneGeometry(300, 300, 1, 1),
+            new THREE.MeshLambertMaterial({ color: "red" })
+          );
+          plane.rotation.x = Math.PI / 4;
+          return plane;
+        }}
+        customThreeObjectUpdate={(obj, objData) => {
+          const d = objData as {
+            lat: number;
+            lng: number;
+            alt: number;
+            color: string;
+            radius: number;
+          };
+          Object.assign(
+            obj.position,
+            globeEl.current.getCoords(d.lat, d.lng, d.alt)
+          );
+        }}
       />
     </div>
   );
