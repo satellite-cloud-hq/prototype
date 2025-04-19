@@ -29,7 +29,7 @@ export default function App() {
       <Grid size={6} sx={{ height: "50vh" }}>
         <SimulationPanel />
       </Grid>
-      <Grid size={6} sx={{ height: "30vh" }}>
+      <Grid size={6} sx={{ height: "50vh" }}>
         <TerminalScreen />
       </Grid>
       <Grid size={6} sx={{ height: "50vh" }}>

@@ -51,28 +51,31 @@ export default function TerminalScreen() {
     );
 
     newEvtSource.onopen = () => {
-      terminalRef.current?.write("Connected to server" + "\r\n");
+      terminalRef.current?.write(`Connected to server id: ${id}\r\n`);
     };
 
     newEvtSource.onerror = (error) => {
-      terminalRef.current?.write("Connection error: " + error + "\r\n");
+      terminalRef.current?.write(`Connection error: " ${error}\r\n`);
       newEvtSource.close();
     };
 
     newEvtSource.addEventListener("stdout", (event) => {
-      terminalRef.current?.write(event.data + "\r\n");
+      terminalRef.current?.write(`${event.data} (id: ${id})\r\n`);
     });
 
     newEvtSource.addEventListener("stderr", (event) => {
       console.error("Stderr:", event.data);
-      terminalRef.current?.write("Error: " + event.data + "\r\n");
+      terminalRef.current?.write(`Error: ${event.data} (id: ${id}\r\n`);
     });
 
     newEvtSource.addEventListener("done", (event) => {
-      terminalRef.current?.write("Simulation finished: " + event.data + "\r\n");
+      terminalRef.current?.write(
+        `Simulation finished: ${event.data} (id: ${id})\r\n`
+      );
       newEvtSource.close();
     });
     return () => {
+      console.log("Closing EventSource" + id);
       newEvtSource.close();
     };
   }, [id, terminalRef.current]);
