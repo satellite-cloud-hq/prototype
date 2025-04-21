@@ -3,10 +3,9 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { useAtom } from "jotai";
-import { idAtom } from "../utils/atoms";
+import { outputtLogAtom } from "../utils/atoms";
 
 export default function TerminalScreen() {
-  const [id, setId] = useAtom(idAtom);
   const terminalRef = useRef<Terminal>(null);
 
   const disposeTerminal = () => {
@@ -43,52 +42,63 @@ export default function TerminalScreen() {
     };
   }, []);
 
+  // useEffect(() => {
+  //   if (!id || !terminalRef.current) return;
+
+  //   const newEvtSource = new EventSource(
+  //     `http://localhost:8000/simulations/${id}/output`
+  //   );
+
+  //   newEvtSource.onopen = () => {
+  //     terminalRef.current?.write(`Connected to server id: ${id}\r\n`);
+  //   };
+
+  //   newEvtSource.onerror = (error) => {
+  //     terminalRef.current?.write(`Connection error: " ${error}\r\n`);
+  //     newEvtSource.close();
+  //   };
+
+  //   newEvtSource.addEventListener("stdout", (event) => {
+  //     terminalRef.current?.write(`${event.data} (id: ${id})\r\n`);
+  //   });
+
+  //   newEvtSource.addEventListener("stderr", (event) => {
+  //     console.error("Stderr:", event.data);
+  //     terminalRef.current?.write(`Error: ${event.data} (id: ${id}\r\n`);
+  //   });
+
+  //   newEvtSource.addEventListener("done", (event) => {
+  //     terminalRef.current?.write(
+  //       `Simulation finished: ${event.data} (id: ${id})\r\n`
+  //     );
+  //     newEvtSource.close();
+  //   });
+  //   return () => {
+  //     console.log("Closing EventSource" + id);
+  //     newEvtSource.close();
+  //   };
+  // }, [id, terminalRef.current]);
+  const [outputLog] = useAtom(outputtLogAtom);
   useEffect(() => {
-    if (!id || !terminalRef.current) return;
-
-    const newEvtSource = new EventSource(
-      `http://localhost:8000/simulations/${id}/output`
-    );
-
-    newEvtSource.onopen = () => {
-      terminalRef.current?.write(`Connected to server id: ${id}\r\n`);
-    };
-
-    newEvtSource.onerror = (error) => {
-      terminalRef.current?.write(`Connection error: " ${error}\r\n`);
-      newEvtSource.close();
-    };
-
-    newEvtSource.addEventListener("stdout", (event) => {
-      terminalRef.current?.write(`${event.data} (id: ${id})\r\n`);
-    });
-
-    newEvtSource.addEventListener("stderr", (event) => {
-      console.error("Stderr:", event.data);
-      terminalRef.current?.write(`Error: ${event.data} (id: ${id}\r\n`);
-    });
-
-    newEvtSource.addEventListener("done", (event) => {
-      terminalRef.current?.write(
-        `Simulation finished: ${event.data} (id: ${id})\r\n`
-      );
-      newEvtSource.close();
-    });
-    return () => {
-      console.log("Closing EventSource" + id);
-      newEvtSource.close();
-    };
-  }, [id, terminalRef.current]);
+    if (!outputLog || !terminalRef.current) return;
+    // terminalRef.current?.write(outputLog);
+    // setOutputLog("");
+  }, [outputLog, terminalRef.current]);
 
   return (
-    <div
-      id="terminal"
-      style={{
-        backgroundColor: "#000",
-        padding: "1%",
-        width: "98%",
-        height: "98%",
-      }}
-    />
+    // <div
+    //   id="terminal"
+    //   style={{
+    //     backgroundColor: "#000",
+    //     padding: "1%",
+    //     width: "98%",
+    //     height: "98%",
+    //   }}
+    // />
+    <div>
+      {outputLog.map((log, index) => {
+        return <div key={index}>{log}</div>;
+      })}
+    </div>
   );
 }

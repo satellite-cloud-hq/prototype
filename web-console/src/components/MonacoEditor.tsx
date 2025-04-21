@@ -10,7 +10,11 @@ import {
   handleSimulationsStopPost,
 } from "../utils/data";
 import { useAtom } from "jotai";
-import { idAtom } from "../utils/atoms";
+import {
+  simulationAtom,
+  outputtLogAtom,
+  appendOutputLogAtom,
+} from "../utils/atoms";
 
 const defaultFiles = {
   "app.py": {
@@ -44,7 +48,18 @@ export default function MonacoEditor() {
     });
   };
 
-  const [id, setId] = useAtom(idAtom);
+  const [simulation, setSimulation] = useAtom(simulationAtom);
+  const [outputLog, setOutputLog] = useAtom(outputtLogAtom);
+  const [, appendOutputLog] = useAtom(appendOutputLogAtom);
+  const [evtSource, setEvtSource] = useState<EventSource | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (evtSource) {
+        evtSource.close();
+      }
+    };
+  }, [evtSource]);
 
   return (
     <div
@@ -79,23 +94,66 @@ export default function MonacoEditor() {
             config.yaml
           </Button>
         </ButtonGroup>
-        <ButtonGroup>
+        {simulation === null || !simulation.running ? (
           <IconButton
             aria-label="play"
             color="primary"
             onClick={async () => {
               try {
+                console.log("Uploading app file...");
+                console.log("File content:", files["app.py"].value);
                 const res = await handleSimulationsPost({
                   conditionFileContent: file["config.yaml"],
                   appFileContent: files["app.py"].value,
                 });
 
                 console.log("Response:", res);
-                alert("App file uploaded successfully");
+                // alert("App file uploaded successfully");
                 const { id, status } = res;
                 console.log("Simulation ID:", id);
                 console.log("Simulation Status:", status);
-                setId(id);
+
+                if (evtSource) {
+                  evtSource.close();
+                }
+                const newEvtSource = new EventSource(
+                  `http://localhost:8000/simulations/${id}/output`
+                );
+
+                newEvtSource.onopen = () => {
+                  setOutputLog([]);
+                  appendOutputLog(`Connected to server id: ${id}\r\n`);
+                };
+
+                newEvtSource.onerror = (error) => {
+                  appendOutputLog(`Connection error: " ${error}\r\n`);
+                  newEvtSource.close();
+                };
+
+                newEvtSource.addEventListener("stdout", (event) => {
+                  appendOutputLog(`${event.data} (id: ${id})\r\n`);
+                  console.log("Stdout:", event.data);
+                });
+
+                newEvtSource.addEventListener("stderr", (event) => {
+                  console.error("Stderr:", event.data);
+                  appendOutputLog(`Error: ${event.data} (id: ${id}\r\n`);
+                });
+
+                newEvtSource.addEventListener("done", (event) => {
+                  appendOutputLog(
+                    `Simulation finished: ${event.data} (id: ${id})\r\n`
+                  );
+                  newEvtSource.close();
+                  setSimulation((prev) => {
+                    if (prev) {
+                      return { ...prev, running: false };
+                    }
+                    return prev;
+                  });
+                });
+                setEvtSource(newEvtSource);
+                setSimulation({ id: id, running: status === "running" });
               } catch (error) {
                 alert("Error uploading app file."); //TODO show error message
                 console.error("Error:", error);
@@ -104,18 +162,19 @@ export default function MonacoEditor() {
           >
             <PlayArrow />
           </IconButton>
+        ) : (
           <IconButton
             aria-label="stop"
             color="error"
             onClick={async () => {
-              if (!id) {
+              if (!simulation) {
                 alert(
                   "No simulation ID found. Please start a simulation first."
                 );
                 return;
               }
               try {
-                const res = await handleSimulationsStopPost(id);
+                const res = await handleSimulationsStopPost(simulation.id);
                 console.log("Response:", res);
                 alert("Simulation stopped successfully");
               } catch (error) {
@@ -126,24 +185,24 @@ export default function MonacoEditor() {
           >
             <Stop />
           </IconButton>
-          <Button
-            variant="contained"
-            color="inherit"
-            onClick={() => {
-              handleSchedulePost(files["config.yaml"].value)
-                .then((res) => {
-                  console.log("Response:", res);
-                  alert("Config file uploaded successfully");
-                })
-                .catch((error) => {
-                  alert("Error uploading config file."); //TODO show error message
-                  console.error("Error:", error);
-                });
-            }}
-          >
-            Upload Config File
-          </Button>
-        </ButtonGroup>
+        )}
+        <Button
+          variant="contained"
+          color="inherit"
+          onClick={() => {
+            handleSchedulePost(files["config.yaml"].value)
+              .then((res) => {
+                console.log("Response:", res);
+                alert("Config file uploaded successfully");
+              })
+              .catch((error) => {
+                alert("Error uploading config file."); //TODO show error message
+                console.error("Error:", error);
+              });
+          }}
+        >
+          Upload Config File
+        </Button>
       </Stack>
       <div style={{ flex: 1, minHeight: 0 }}>
         <Editor
