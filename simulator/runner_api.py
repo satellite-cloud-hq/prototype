@@ -10,7 +10,7 @@ from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 from influxdb_client import Point, WritePrecision
 from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 
 app = FastAPI()
@@ -41,6 +41,9 @@ class Simulation:
 
         self.status = self.Status.RUNNING
         self.app_path = app_path
+
+        self.start_datetime = datetime(2023, 2, 10)
+        self.end_datetime = datetime(2023, 2, 10) + timedelta(seconds=5000)
 
     def run(self):
         self.s2e_process = subprocess.Popen(str(S2E_EXEC_FILE), cwd=str(S2E_WORKING_DIR))
@@ -124,9 +127,6 @@ class Simulation:
                         raise ValueError(f'Failed to write points to InfluxDB, {success}')
 
 
-
-        
-
     async def run_and_stream(self):
         print('running app')
         self.app_process = await asyncio.create_subprocess_exec(
@@ -157,7 +157,9 @@ class Simulation:
     def to_dict(self):
         return {
             'id': self.id,
-            'status': self.status
+            'status': self.status,
+            'start_date_time': self.start_datetime.isoformat(),
+            'end_date_time': self.end_datetime.isoformat(),
         }
     
 @app.get('/')

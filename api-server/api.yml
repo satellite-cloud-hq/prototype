@@ -191,6 +191,14 @@ components:
           type: string
           enum: ["running", "completed", "stopped", "failed"]
           example: "running"
+        start_date_time:
+          type: string
+          format: date-time
+          example: "2023-10-01T00:00:00Z"
+        end_date_time:
+          type: string
+          format: date-time
+          example: "2023-10-01T00:00:00Z"
 
     Pass:
       type: object
