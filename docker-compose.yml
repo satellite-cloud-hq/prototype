@@ -40,11 +40,6 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=satellite-cloud
       - DOCKER_INFLUXDB_INIT_BUCKET=simulation
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=admin-token
-    # 起動前にデータを全部削除してから influxd を立ち上げ
-    command: >
-      sh -c "rm -rf /var/lib/influxdb2/* && influxd"
-    volumes:
-      - log-db/influxdb_data:/var/lib/influxdb2
 
   simulator:
     container_name: simulator

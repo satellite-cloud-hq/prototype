@@ -11,6 +11,7 @@ from fastapi.responses import StreamingResponse
 from influxdb_client import Point, WritePrecision
 from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
 from datetime import datetime
+import uuid
 
 app = FastAPI()
 
@@ -28,7 +29,6 @@ LOGDB_ORG = 'satellite-cloud'
 LOGDB_TOKEN = 'admin-token'
 
 class Simulation:
-    id_counter = 0
 
     class Status(StrEnum):
         RUNNING   = 'running'
@@ -37,8 +37,7 @@ class Simulation:
         FAILED    = 'failed'
 
     def __init__(self, condition: Dict, app_path: Path):
-        self.id = str(self.id_counter)
-        Simulation.id_counter += 1
+        self.id = str(uuid.uuid4())
 
         self.status = self.Status.RUNNING
         self.app_path = app_path
