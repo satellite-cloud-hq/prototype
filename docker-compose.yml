@@ -26,7 +26,25 @@ services:
 
   # grafana:
 
-  # logdb:
+  log-db:
+    image: influxdb:2.7.11
+    container_name: "log-db"
+    ports:
+      - 8086:8086
+    # volumes:
+    #   - ./log-db/data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=adminadmin
+      - DOCKER_INFLUXDB_INIT_ORG=satellite-cloud
+      - DOCKER_INFLUXDB_INIT_BUCKET=simulation
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=admin-token
+    # 起動前にデータを全部削除してから influxd を立ち上げ
+    command: >
+      sh -c "rm -rf /var/lib/influxdb2/* && influxd"
+    volumes:
+      - log-db/influxdb_data:/var/lib/influxdb2
 
   simulator:
     container_name: simulator
@@ -38,4 +56,4 @@ services:
       - "8910:8910"
       - "8920:80"
     tty: true
-    platform: linux/arm64 # ホストのプラットフォームに合わせる
+    platform: linux/x86_64
