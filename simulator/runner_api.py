@@ -8,6 +8,10 @@ import uuid
 import json
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
+from influxdb_client import Point, WritePrecision
+from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
+from datetime import datetime, timedelta
+import uuid
 
 app = FastAPI()
 
@@ -18,9 +22,13 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 S2E_WORKING_DIR = Path('./aobc-sils/s2e/')
 S2E_EXEC_FILE = Path('./build/S2E_AOBC')
+S2E_LOG_DIR = Path('./aobc-sils/s2e/logs/')
+
+LOGDB_URL = 'http://log-db:8086/'
+LOGDB_ORG = 'satellite-cloud'
+LOGDB_TOKEN = 'admin-token'
 
 class Simulation:
-    id_counter = 0
 
     class Status(StrEnum):
         RUNNING   = 'running'
@@ -29,17 +37,20 @@ class Simulation:
         FAILED    = 'failed'
 
     def __init__(self, condition: Dict, app_path: Path):
-        self.id = str(self.id_counter)
-        Simulation.id_counter += 1
+        self.id = str(uuid.uuid4())
 
         self.status = self.Status.RUNNING
         self.app_path = app_path
+
+        self.start_datetime = datetime(2023, 2, 10)
+        self.end_datetime = datetime(2023, 2, 10) + timedelta(seconds=5000)
 
     def run(self):
         self.s2e_process = subprocess.Popen(str(S2E_EXEC_FILE), cwd=str(S2E_WORKING_DIR))
 
         self.queue = asyncio.Queue()
 
+        asyncio.create_task(self.read_and_insert_log())
         asyncio.create_task(self.run_and_stream())
 
     def stop(self):
@@ -48,6 +59,73 @@ class Simulation:
         if self.app_process and self.app_process.returncode is None:
             self.app_process.terminate()
         self.status = self.Status.STOPPED
+
+    async def read_and_insert_log(self):
+        # Find the newest log file created after the current time
+        current_time = datetime.now().timestamp()
+        newest_log_file = None
+        while self.status == self.Status.RUNNING:
+            log_files = list(S2E_LOG_DIR.glob("logs_*/*_default.csv"))
+            if not log_files:
+                await asyncio.sleep(0.1)
+                continue
+
+            newest_log_file = max(log_files, key=lambda f: f.stat().st_mtime)
+            if newest_log_file.stat().st_mtime > current_time:
+                break
+            await asyncio.sleep(0.1)
+
+        if not newest_log_file:
+            raise ValueError("No log file found.")
+
+        async with InfluxDBClientAsync(url=LOGDB_URL, token=LOGDB_TOKEN, org=LOGDB_ORG) as client:
+            write_api = client.write_api()
+
+            # Open the newest log file and stream its content
+            with newest_log_file.open("r") as log_file:
+                chunk_size = 1024
+                sleep_sec = 1
+                buffer = ''
+
+                header = []
+
+                while self.status == self.Status.RUNNING:
+                    chunk = log_file.read(chunk_size)
+                    if not chunk:
+                        await asyncio.sleep(sleep_sec)
+                        continue
+                    buffer += chunk
+
+                    points = []
+
+                    while "\n" in buffer:
+                        line, buffer = buffer.split("\n", 1)
+
+                        if header == []:
+                            header = line.split(',')
+                            continue
+
+                        values = line.split(',')
+                        try:
+                            time = datetime.strptime(values[1], '%Y/%m/%d %H:%M:%S.%f')
+                        except ValueError:
+                            print(f"Invalid time format: {values[1]}")
+                            continue
+
+                        point = Point(self.id).time(time, WritePrecision.MS)
+
+                        for i, name in enumerate(header):
+                            if not name: continue
+                            if i == 1:
+                                pass
+                            else:
+                                point.field(name, float(values[i]))
+                        points.append(point)
+
+                    success = await write_api.write(bucket='simulation', record=points)
+                    if not success:
+                        raise ValueError(f'Failed to write points to InfluxDB, {success}')
+
 
     async def run_and_stream(self):
         print('running app')
@@ -79,7 +157,9 @@ class Simulation:
     def to_dict(self):
         return {
             'id': self.id,
-            'status': self.status
+            'status': self.status,
+            'start_date_time': self.start_datetime.isoformat(),
+            'end_date_time': self.end_datetime.isoformat(),
         }
     
 @app.get('/')
@@ -120,6 +200,7 @@ async def run_simulation(
         return sim.to_dict()
     
     except Exception as e:
+        raise e
         raise HTTPException(status_code=500, detail=str(e))
 
 

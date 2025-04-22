@@ -24,4 +24,4 @@ vendor/pkg/
 pyenv
 Vagrantfile
 
-.DS_Store
+log-db/influxdb_data

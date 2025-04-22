@@ -56,14 +56,15 @@ RUN npm install .
 # CMD npm run devtools:sils
 
 # Runner
-WORKDIR /root/
-COPY /requirements.txt .
 
 RUN python3 -m venv /opt/venv && \
     . /opt/venv/bin/activate && \
-    pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --upgrade pip
 ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /root/
+COPY /requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY /runner_api.py .
 
