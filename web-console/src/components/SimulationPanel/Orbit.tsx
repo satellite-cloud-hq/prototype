@@ -1,6 +1,8 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
 import { orbitType } from "../../utils/types";
+import { useAtom } from "jotai";
+import { simulationAtom } from "../../utils/atoms";
 
 export default function Orbit({
   epoch,
@@ -11,26 +13,64 @@ export default function Orbit({
   mean_anomaly,
   mean_motion,
 }: orbitType) {
+  const [simulation] = useAtom<{
+    id: string;
+    running: boolean;
+    start: string;
+    end: string;
+  } | null>(simulationAtom);
+
+  const calculateSimulationAngle = (
+    epoch: string,
+    start: string,
+    end: string,
+    n: number,
+    mean_anomaly: number
+  ) => {
+    const epochDate = new Date(epoch);
+
+    const epochTime = epochDate.getTime();
+    const startTime = new Date(start).getTime();
+    const endTime = new Date(end).getTime();
+
+    const timeDiff = (epochTime - startTime) / 1000; // in seconds
+    const totalTime = (endTime - startTime) / 1000; // in seconds
+
+    const startAngle = n * timeDiff + mean_anomaly;
+    const endAngle = n * totalTime + startAngle;
+    return [startAngle, endAngle];
+  };
+
   const geometry = useMemo(() => {
     const n = (mean_motion * 2 * Math.PI) / (3600 * 24); // mean motion in rad/s
     const mu = 398600.4418;
     const a = Math.pow(mu / (n * n), 1 / 3); // semi-major axis
     const b = a * Math.sqrt(1 - eccentricity * eccentricity); // semi-minor axis
 
+    const [startAngle, endAngle] = simulation
+      ? calculateSimulationAngle(
+          epoch,
+          simulation.start,
+          simulation.end,
+          n,
+          mean_anomaly
+        )
+      : [0, Math.PI * 2];
+
     const orbit = new THREE.EllipseCurve(
       0,
       0,
       a / 1000,
       b / 1000,
-      0,
-      Math.PI * 2,
+      startAngle,
+      endAngle,
       false,
       0
     );
     const points = orbit.getPoints(100);
     const ellipseGeometry = new THREE.BufferGeometry().setFromPoints(points);
     return ellipseGeometry;
-  }, [mean_motion, eccentricity]);
+  }, [mean_motion, eccentricity, simulation]);
 
   const rotation = useMemo(() => {
     const initRad = THREE.MathUtils.degToRad(90);

@@ -107,7 +107,7 @@ export default function MonacoEditor() {
 
                 console.log("Response:", res);
                 // alert("App file uploaded successfully");
-                const { id, status } = res;
+                const { id, status, start, end } = res;
                 console.log("Simulation ID:", id);
                 console.log("Simulation Status:", status);
 
@@ -151,7 +151,12 @@ export default function MonacoEditor() {
                   });
                 });
                 setEvtSource(newEvtSource);
-                setSimulation({ id: id, running: status === "running" });
+                setSimulation({
+                  id: id,
+                  running: status === "running",
+                  start,
+                  end,
+                });
               } catch (error) {
                 alert("Error uploading app file."); //TODO show error message
                 console.error("Error:", error);

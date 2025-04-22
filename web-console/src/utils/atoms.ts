@@ -1,6 +1,11 @@
 import { atom } from "jotai";
 
-const simulationAtom = atom<{ id: string; running: boolean } | null>(null);
+const simulationAtom = atom<{
+  id: string;
+  running: boolean;
+  start: string;
+  end: string;
+} | null>(null);
 const outputtLogAtom = atom<string[]>([]);
 const clearOutputLogAtom = atom(null, (get, set) => {
   set(outputtLogAtom, []);
