@@ -1,5 +1,4 @@
 services:
-
   api-server:
     container_name: api-server
     build:
@@ -25,6 +24,20 @@ services:
       - CHOKIDAR_USEPOLLING=true # ホットリロード用
 
   # grafana:
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_SECURITY_COOKIE_SAMESITE=none
+      - GF_SECURITY_COOKIE_SECURE=true
+    #depends_on:
+    #- influxdb logdbが出来次第追記
 
   log-db:
     image: influxdb:2.7.11
@@ -52,3 +65,6 @@ services:
       - "8920:80"
     tty: true
     platform: linux/x86_64
+    
+volumes:
+  grafana-storage:
