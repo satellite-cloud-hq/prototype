@@ -8,13 +8,14 @@ import {
   handleSchedulePost,
   handleSimulationsPost,
   handleSimulationsStopPost,
-} from "../utils/data";
+} from "../../utils/data";
 import { useAtom } from "jotai";
 import {
   simulationAtom,
   outputtLogAtom,
   appendOutputLogAtom,
-} from "../utils/atoms";
+} from "../../utils/atoms";
+import { useLocalStorage } from "../../utils/customHooks";
 
 const defaultFiles = {
   "app.py": {
@@ -31,10 +32,7 @@ const defaultFiles = {
 };
 export default function MonacoEditor() {
   const [fileName, setFileName] = useState("app.py");
-  const [files, setFiles] =
-    useState<Record<string, { name: string; language: string; value: string }>>(
-      defaultFiles
-    );
+  const [files, setFiles] = useLocalStorage("files", defaultFiles);
 
   const file = files[fileName];
 
