@@ -6,41 +6,41 @@ import { useAtom } from "jotai";
 import { outputtLogAtom } from "../utils/atoms";
 
 export default function TerminalScreen() {
-  const terminalRef = useRef<Terminal>(null);
+  // const terminalRef = useRef<Terminal>(null);
 
-  const disposeTerminal = () => {
-    if (terminalRef.current) {
-      terminalRef.current.dispose();
-      terminalRef.current = null;
-    }
-  };
+  // const disposeTerminal = () => {
+  //   if (terminalRef.current) {
+  //     terminalRef.current.dispose();
+  //     terminalRef.current = null;
+  //   }
+  // };
 
-  const setup = () => {
-    disposeTerminal();
-    const newTerminal = new Terminal({
-      cursorBlink: true,
-      fontSize: 14,
-    });
-    const fitAddon = new FitAddon();
-    newTerminal.loadAddon(fitAddon);
-    if (document.getElementById("terminal") !== null) {
-      newTerminal.open(document.getElementById("terminal")!);
-      fitAddon.fit();
-      newTerminal.write("Welcome to the terminal!\r\n$ ");
-      terminalRef.current = newTerminal;
-    }
-  };
+  // const setup = () => {
+  //   disposeTerminal();
+  //   const newTerminal = new Terminal({
+  //     cursorBlink: true,
+  //     fontSize: 14,
+  //   });
+  //   const fitAddon = new FitAddon();
+  //   newTerminal.loadAddon(fitAddon);
+  //   if (document.getElementById("terminal") !== null) {
+  //     newTerminal.open(document.getElementById("terminal")!);
+  //     fitAddon.fit();
+  //     newTerminal.write("Welcome to the terminal!\r\n$ ");
+  //     terminalRef.current = newTerminal;
+  //   }
+  // };
 
-  useEffect(() => {
-    try {
-      setup();
-    } catch (error) {
-      console.error("Error setting up terminal:", error);
-    }
-    return () => {
-      disposeTerminal();
-    };
-  }, []);
+  // useEffect(() => {
+  //   try {
+  //     setup();
+  //   } catch (error) {
+  //     console.error("Error setting up terminal:", error);
+  //   }
+  //   return () => {
+  //     disposeTerminal();
+  //   };
+  // }, []);
 
   // useEffect(() => {
   //   if (!id || !terminalRef.current) return;
@@ -78,12 +78,19 @@ export default function TerminalScreen() {
   //     newEvtSource.close();
   //   };
   // }, [id, terminalRef.current]);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [outputLog] = useAtom(outputtLogAtom);
+  // useEffect(() => {
+  //   if (!outputLog || !terminalRef.current) return;
+  //   // terminalRef.current?.write(outputLog);
+  //   // setOutputLog("");
+  // }, [outputLog, terminalRef.current]);
+
   useEffect(() => {
-    if (!outputLog || !terminalRef.current) return;
-    // terminalRef.current?.write(outputLog);
-    // setOutputLog("");
-  }, [outputLog, terminalRef.current]);
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "instant", block: "end" });
+    }
+  }, [outputLog]);
 
   return (
     // <div
@@ -95,10 +102,26 @@ export default function TerminalScreen() {
     //     height: "98%",
     //   }}
     // />
-    <div>
+    <div
+      style={{
+        backgroundColor: "black",
+        padding: "1%",
+        width: "98%",
+        height: "98%",
+        overflowY: "auto",
+        color: "white",
+        fontFamily: "monospace",
+        fontSize: "14px",
+        whiteSpace: "pre",
+        wordWrap: "break-word",
+        wordBreak: "break-all",
+        lineHeight: "1.5",
+      }}
+    >
       {outputLog.map((log, index) => {
         return <div key={index}>{log}</div>;
       })}
+      <div ref={scrollRef} />
     </div>
   );
 }
