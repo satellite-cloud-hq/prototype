@@ -1,24 +1,24 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
-import { orbitType } from "../../utils/types";
-import { useAtom } from "jotai";
-import { simulationAtom } from "../../utils/atoms";
+import { satellitesType, simulationType } from "../../utils/types";
 
 export default function Orbit({
-  epoch,
-  inclination,
-  raan,
-  eccentricity,
-  argument_of_perigee,
-  mean_anomaly,
-  mean_motion,
-}: orbitType) {
-  const [simulation] = useAtom<{
-    id: string;
-    running: boolean;
-    startDateTime: string;
-    endDateTime: string;
-  } | null>(simulationAtom);
+  simulation,
+  satellites,
+}: {
+  simulation: simulationType | null;
+  satellites: satellitesType;
+}) {
+  const { orbit } = satellites;
+  const {
+    mean_motion,
+    eccentricity,
+    epoch,
+    mean_anomaly,
+    raan,
+    inclination,
+    argument_of_perigee,
+  } = orbit;
 
   const calculateSimulationAngle = (
     epoch: string,
@@ -53,8 +53,8 @@ export default function Orbit({
     const [startAngle, endAngle] = simulation
       ? calculateSimulationAngle(
           epoch,
-          simulation.startDateTime,
-          simulation.endDateTime,
+          simulation.start_date_time,
+          simulation.end_date_time,
           n,
           mean_anomaly
         )

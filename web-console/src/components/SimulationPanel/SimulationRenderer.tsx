@@ -1,14 +1,16 @@
-import React, { useMemo, useEffect, useRef } from "react";
+import React from "react";
 import * as THREE from "three";
-import { OrbitControls, useTexture } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import Orbit from "./Orbit";
 import Earth from "./Earth";
-import { satellitesType } from "../../utils/types";
+import { satellitesType, simulationType } from "../../utils/types";
 
 export default function SimulationRenderer({
+  simulation,
   satellitesData,
 }: {
+  simulation: simulationType | null;
   satellitesData: satellitesType[];
 }) {
   return (
@@ -32,7 +34,13 @@ export default function SimulationRenderer({
       <group rotation={[0, 0, (23.4 * Math.PI) / 180]}>
         <Earth />
         {satellitesData.map((satellite) => {
-          return <Orbit key={satellite.id} {...satellite.orbit} />;
+          return (
+            <Orbit
+              key={satellite.id}
+              simulation={simulation}
+              satellites={satellite}
+            />
+          );
         })}
       </group>
       <directionalLight position={[-2, 0, 0]} intensity={1.0} />

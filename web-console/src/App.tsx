@@ -5,6 +5,7 @@ import MonacoEditor from "./components/EditorPanel/MonacoEditor";
 import TerminalScreen from "./components/TerminalScreen";
 import Grafana from "./components/Grafana";
 import SimulationPanel from "./components/SimulationPanel/SimulationPanel";
+import { useLoaderData } from "react-router";
 
 export default function App() {
   return (

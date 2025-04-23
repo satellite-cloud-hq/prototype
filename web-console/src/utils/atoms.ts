@@ -15,9 +15,9 @@ const appendOutputLogAtom = atom(null, (get, set, newOutput: string) => {
   set(outputtLogAtom, [...currentOutput, newOutput]);
 });
 
-export {
-  simulationAtom,
-  outputtLogAtom,
-  appendOutputLogAtom,
-  clearOutputLogAtom,
-};
+// export {
+//   simulationAtom,
+//   outputtLogAtom,
+//   appendOutputLogAtom,
+//   clearOutputLogAtom,
+// };

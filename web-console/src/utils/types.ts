@@ -1,8 +1,8 @@
 type simulationType = {
   id: string;
   running: boolean;
-  startDateTime: string;
-  endDateTime: string;
+  start_date_time: string;
+  end_date_time: string;
 };
 type satellitesType = {
   id: string;

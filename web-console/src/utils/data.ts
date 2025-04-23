@@ -1,4 +1,5 @@
 import axios from "axios";
+import { simulationType } from "./types";
 
 const apiClient = axios.create({
   baseURL: "http://localhost:8000/", // Docker Compose のサービス名を使用
