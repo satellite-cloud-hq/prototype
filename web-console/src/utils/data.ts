@@ -87,6 +87,17 @@ const handleSimulationsStopPost = async (simulationId: string) => {
     throw error;
   }
 };
+
+// GET /simulations
+const handleSimulationsGetAll = async () => {
+  try {
+    const res = await apiClient.get(`/simulations`);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
 // GET /resources/satellites
 const handleReousrcesSatellitesGet = async () => {
   try {
@@ -120,11 +131,24 @@ const handleReousrcesGroundStationsGet = async () => {
   }
 };
 
+// GET /simulations/:id/output
+const handleSimulationsOutputGet = async (simulationId: string) => {
+  try {
+    const res = await apiClient.get(`/simulations/${simulationId}/output`);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export {
   handleSchedulePost,
   handleSimulationsPost,
   handleSimulationsStopPost,
   handleReousrcesSatellitesGet,
   handleSimulationsGet,
+  handleSimulationsGetAll,
   handleReousrcesGroundStationsGet,
+  handleSimulationsOutputGet,
 };
