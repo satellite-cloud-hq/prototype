@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { Button, Stack, ButtonGroup, IconButton } from "@mui/material";
+import React, { useState } from "react";
+import {
+  Button,
+  Stack,
+  ButtonGroup,
+  IconButton,
+  InputLabel,
+  FormControl,
+  MenuItem,
+  Select,
+} from "@mui/material";
 
 import { PlayArrow, Stop } from "@mui/icons-material";
 
 import Editor from "@monaco-editor/react";
-import {
-  handleSchedulePost,
-  handleSimulationsPost,
-  handleSimulationsStopPost,
-} from "../../utils/data";
-import { useAtom } from "jotai";
-import {
-  simulationAtom,
-  outputtLogAtom,
-  appendOutputLogAtom,
-} from "../../utils/atoms";
+import { handleSchedulePost } from "../../utils/data";
 import { useLocalStorage } from "../../utils/customHooks";
+import { useLoaderData, useSearchParams, useSubmit } from "react-router";
 
 const defaultFiles = {
   "app.py": {
@@ -31,6 +31,10 @@ const defaultFiles = {
   },
 };
 export default function MonacoEditor() {
+  const submit = useSubmit();
+  const { simulation, simulationsList } = useLoaderData();
+  const simulationId = simulation?.id;
+  const running = simulation?.status === "running";
   const [fileName, setFileName] = useState("app.py");
   const [files, setFiles] = useLocalStorage("files", defaultFiles);
 
@@ -45,19 +49,6 @@ export default function MonacoEditor() {
       },
     });
   };
-
-  const [simulation, setSimulation] = useAtom(simulationAtom);
-  const [outputLog, setOutputLog] = useAtom(outputtLogAtom);
-  const [, appendOutputLog] = useAtom(appendOutputLogAtom);
-  const [evtSource, setEvtSource] = useState<EventSource | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (evtSource) {
-        evtSource.close();
-      }
-    };
-  }, [evtSource]);
 
   return (
     <div
@@ -92,71 +83,23 @@ export default function MonacoEditor() {
             config.yaml
           </Button>
         </ButtonGroup>
-        {simulation === null || !simulation.running ? (
+        {simulation === null || !running ? (
           <IconButton
             aria-label="play"
             color="primary"
             onClick={async () => {
               try {
-                console.log("Uploading app file...");
-                console.log("File content:", files["app.py"].value);
-                const res = await handleSimulationsPost({
-                  conditionFileContent: file["config.yaml"],
-                  appFileContent: files["app.py"].value,
-                });
-
-                console.log("Response:", res);
-                // alert("App file uploaded successfully");
-                const { id, status, start, end } = res;
-                console.log("Simulation ID:", id);
-                console.log("Simulation Status:", status);
-
-                if (evtSource) {
-                  evtSource.close();
-                }
-                const newEvtSource = new EventSource(
-                  `http://localhost:8000/simulations/${id}/output`
+                submit(
+                  {
+                    action: "run",
+                    conditionFileContent: files["config.yaml"].value,
+                    appFileContent: files["app.py"].value,
+                  },
+                  {
+                    method: "post",
+                    action: "/",
+                  }
                 );
-
-                newEvtSource.onopen = () => {
-                  setOutputLog([]);
-                  appendOutputLog(`Connected to server id: ${id}\r\n`);
-                };
-
-                newEvtSource.onerror = (error) => {
-                  appendOutputLog(`Connection error: " ${error}\r\n`);
-                  newEvtSource.close();
-                };
-
-                newEvtSource.addEventListener("stdout", (event) => {
-                  appendOutputLog(`${event.data} (id: ${id})\r\n`);
-                  console.log("Stdout:", event.data);
-                });
-
-                newEvtSource.addEventListener("stderr", (event) => {
-                  console.error("Stderr:", event.data);
-                  appendOutputLog(`Error: ${event.data} (id: ${id}\r\n`);
-                });
-
-                newEvtSource.addEventListener("done", (event) => {
-                  appendOutputLog(
-                    `Simulation finished: ${event.data} (id: ${id})\r\n`
-                  );
-                  newEvtSource.close();
-                  setSimulation((prev) => {
-                    if (prev) {
-                      return { ...prev, running: false };
-                    }
-                    return prev;
-                  });
-                });
-                setEvtSource(newEvtSource);
-                setSimulation({
-                  id: id,
-                  running: status === "running",
-                  start,
-                  end,
-                });
               } catch (error) {
                 alert("Error uploading app file."); //TODO show error message
                 console.error("Error:", error);
@@ -169,17 +112,24 @@ export default function MonacoEditor() {
           <IconButton
             aria-label="stop"
             color="error"
-            onClick={async () => {
-              if (!simulation) {
+            onClick={() => {
+              if (!simulationId) {
                 alert(
                   "No simulation ID found. Please start a simulation first."
                 );
                 return;
               }
               try {
-                const res = await handleSimulationsStopPost(simulation.id);
-                console.log("Response:", res);
-                alert("Simulation stopped successfully");
+                submit(
+                  {
+                    action: "stop",
+                    simulationId: simulationId,
+                  },
+                  {
+                    method: "post",
+                    action: "/",
+                  }
+                );
               } catch (error) {
                 alert("Error stopping simulation."); //TODO show error message
                 console.error("Error:", error);
@@ -189,6 +139,31 @@ export default function MonacoEditor() {
             <Stop />
           </IconButton>
         )}
+        <FormControl>
+          <InputLabel id="demo-simple-select-label">id</InputLabel>
+          <Select
+            value={simulationId || ""}
+            label="id"
+            onChange={async (event) => {
+              submit(
+                {
+                  action: "switch",
+                  simulationId: event.target.value,
+                },
+                {
+                  method: "post",
+                  action: "/",
+                }
+              );
+            }}
+          >
+            {simulationsList.map((simulation) => (
+              <MenuItem key={simulation.id} value={simulation.id}>
+                {simulation.id}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Button
           variant="contained"
           color="inherit"

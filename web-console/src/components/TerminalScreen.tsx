@@ -1,90 +1,69 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Terminal } from "@xterm/xterm";
-import { FitAddon } from "xterm-addon-fit";
-import "@xterm/xterm/css/xterm.css";
-import { useAtom } from "jotai";
-import { outputtLogAtom } from "../utils/atoms";
+import { useLoaderData, useSubmit } from "react-router";
 
 export default function TerminalScreen() {
-  // const terminalRef = useRef<Terminal>(null);
+  const submit = useSubmit();
+  const { simulation } = useLoaderData();
+  const id = simulation?.id;
+  const running = simulation?.status === "running";
 
-  // const disposeTerminal = () => {
-  //   if (terminalRef.current) {
-  //     terminalRef.current.dispose();
-  //     terminalRef.current = null;
-  //   }
-  // };
+  const [outputLog, setOutputLog] = useState<string[]>([]);
+  const appendOutputLog = (log: string) => {
+    setOutputLog((prev) => [...prev, log]);
+  };
 
-  // const setup = () => {
-  //   disposeTerminal();
-  //   const newTerminal = new Terminal({
-  //     cursorBlink: true,
-  //     fontSize: 14,
-  //   });
-  //   const fitAddon = new FitAddon();
-  //   newTerminal.loadAddon(fitAddon);
-  //   if (document.getElementById("terminal") !== null) {
-  //     newTerminal.open(document.getElementById("terminal")!);
-  //     fitAddon.fit();
-  //     newTerminal.write("Welcome to the terminal!\r\n$ ");
-  //     terminalRef.current = newTerminal;
-  //   }
-  // };
+  useEffect(() => {
+    if (!id || !running) {
+      setOutputLog([]);
+      return;
+    }
 
-  // useEffect(() => {
-  //   try {
-  //     setup();
-  //   } catch (error) {
-  //     console.error("Error setting up terminal:", error);
-  //   }
-  //   return () => {
-  //     disposeTerminal();
-  //   };
-  // }, []);
+    const newEvtSource = new EventSource(
+      `http://localhost:8000/simulations/${id}/output`
+    );
 
-  // useEffect(() => {
-  //   if (!id || !terminalRef.current) return;
+    newEvtSource.onopen = () => {
+      setOutputLog([]);
+      appendOutputLog(`Connected to server id: ${id}\r\n`);
+    };
 
-  //   const newEvtSource = new EventSource(
-  //     `http://localhost:8000/simulations/${id}/output`
-  //   );
+    newEvtSource.onerror = (error) => {
+      appendOutputLog(`Connection error: " ${error}\r\n`);
+      newEvtSource.close();
+    };
 
-  //   newEvtSource.onopen = () => {
-  //     terminalRef.current?.write(`Connected to server id: ${id}\r\n`);
-  //   };
+    newEvtSource.addEventListener("stdout", (event) => {
+      appendOutputLog(`${event.data} (id: ${id})\r\n`);
+      console.log("Stdout:", event.data);
+    });
 
-  //   newEvtSource.onerror = (error) => {
-  //     terminalRef.current?.write(`Connection error: " ${error}\r\n`);
-  //     newEvtSource.close();
-  //   };
+    newEvtSource.addEventListener("stderr", (event) => {
+      console.error("Stderr:", event.data);
+      appendOutputLog(`Error: ${event.data} (id: ${id}\r\n`);
+    });
 
-  //   newEvtSource.addEventListener("stdout", (event) => {
-  //     terminalRef.current?.write(`${event.data} (id: ${id})\r\n`);
-  //   });
+    newEvtSource.addEventListener("done", (event) => {
+      appendOutputLog(`Simulation finished: ${event.data} (id: ${id})\r\n`);
 
-  //   newEvtSource.addEventListener("stderr", (event) => {
-  //     console.error("Stderr:", event.data);
-  //     terminalRef.current?.write(`Error: ${event.data} (id: ${id}\r\n`);
-  //   });
+      submit(
+        {
+          action: "stop",
+          simulationId: id,
+        },
+        {
+          method: "post",
+          action: "/",
+        }
+      );
+      newEvtSource.close();
+    });
+    return () => {
+      console.log("Closing EventSource" + id);
+      newEvtSource.close();
+    };
+  }, [id]);
 
-  //   newEvtSource.addEventListener("done", (event) => {
-  //     terminalRef.current?.write(
-  //       `Simulation finished: ${event.data} (id: ${id})\r\n`
-  //     );
-  //     newEvtSource.close();
-  //   });
-  //   return () => {
-  //     console.log("Closing EventSource" + id);
-  //     newEvtSource.close();
-  //   };
-  // }, [id, terminalRef.current]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [outputLog] = useAtom(outputtLogAtom);
-  // useEffect(() => {
-  //   if (!outputLog || !terminalRef.current) return;
-  //   // terminalRef.current?.write(outputLog);
-  //   // setOutputLog("");
-  // }, [outputLog, terminalRef.current]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -93,15 +72,6 @@ export default function TerminalScreen() {
   }, [outputLog]);
 
   return (
-    // <div
-    //   id="terminal"
-    //   style={{
-    //     backgroundColor: "#000",
-    //     padding: "1%",
-    //     width: "98%",
-    //     height: "98%",
-    //   }}
-    // />
     <div
       style={{
         backgroundColor: "black",

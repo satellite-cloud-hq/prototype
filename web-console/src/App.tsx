@@ -1,6 +1,5 @@
-import { Box, Grid, Button, Stack, Typography, TextField } from "@mui/material";
-import axios from "axios";
-import React, { useState } from "react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import React from "react";
 import MonacoEditor from "./components/EditorPanel/MonacoEditor";
 import TerminalScreen from "./components/TerminalScreen";
 import Grafana from "./components/Grafana";
@@ -8,27 +7,38 @@ import SimulationPanel from "./components/SimulationPanel/SimulationPanel";
 
 export default function App() {
   return (
-    <Grid
-      container
-      sx={{
-        height: "96vh",
+    <PanelGroup
+      direction="horizontal"
+      style={{
+        height: "98vh",
         width: "99vw",
         margin: 0,
         padding: 0,
       }}
     >
-      <Grid size={6} sx={{ height: "50vh" }}>
-        <MonacoEditor />
-      </Grid>
-      <Grid size={6} sx={{ height: "50vh" }}>
-        <SimulationPanel />
-      </Grid>
-      <Grid size={6} sx={{ height: "46vh" }}>
-        <TerminalScreen />
-      </Grid>
-      <Grid size={6} sx={{ height: "46vh" }}>
-        <Grafana />
-      </Grid>
-    </Grid>
+      <Panel defaultSize={50}>
+        <PanelGroup direction="vertical">
+          <Panel defaultSize={60}>
+            <MonacoEditor />
+          </Panel>
+          <PanelResizeHandle />
+          <Panel defaultSize={40}>
+            <TerminalScreen />
+          </Panel>
+        </PanelGroup>
+      </Panel>
+      <PanelResizeHandle />
+      <Panel defaultSize={50}>
+        <PanelGroup direction="vertical">
+          <Panel defaultSize={60}>
+            <SimulationPanel />
+          </Panel>
+          <PanelResizeHandle />
+          <Panel defaultSize={40}>
+            <Grafana />
+          </Panel>
+        </PanelGroup>
+      </Panel>
+    </PanelGroup>
   );
 }

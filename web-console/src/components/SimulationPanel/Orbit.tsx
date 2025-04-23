@@ -1,24 +1,24 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
-import { orbitType } from "../../utils/types";
-import { useAtom } from "jotai";
-import { simulationAtom } from "../../utils/atoms";
+import { satellitesType, simulationType } from "../../utils/types";
 
 export default function Orbit({
-  epoch,
-  inclination,
-  raan,
-  eccentricity,
-  argument_of_perigee,
-  mean_anomaly,
-  mean_motion,
-}: orbitType) {
-  const [simulation] = useAtom<{
-    id: string;
-    running: boolean;
-    start: string;
-    end: string;
-  } | null>(simulationAtom);
+  simulation,
+  satellites,
+}: {
+  simulation: simulationType | null;
+  satellites: satellitesType;
+}) {
+  const { orbit } = satellites;
+  const {
+    mean_motion,
+    eccentricity,
+    epoch,
+    mean_anomaly,
+    raan,
+    inclination,
+    argument_of_perigee,
+  } = orbit;
 
   const calculateSimulationAngle = (
     epoch: string,
@@ -38,38 +38,57 @@ export default function Orbit({
 
     const startAngle = n * timeDiff + mean_anomaly;
     const endAngle = n * totalTime + startAngle;
+    console.log(`Total time: ${totalTime}`);
     return [startAngle, endAngle];
   };
 
-  const geometry = useMemo(() => {
+  const [geometry, highlightedGeometry] = useMemo(() => {
     const n = (mean_motion * 2 * Math.PI) / (3600 * 24); // mean motion in rad/s
+    console.log(`mean motion: ${n}`);
     const mu = 398600.4418;
     const a = Math.pow(mu / (n * n), 1 / 3); // semi-major axis
     const b = a * Math.sqrt(1 - eccentricity * eccentricity); // semi-minor axis
 
+    console.log("simulation: " + simulation);
     const [startAngle, endAngle] = simulation
       ? calculateSimulationAngle(
           epoch,
-          simulation.start,
-          simulation.end,
+          simulation.start_date_time,
+          simulation.end_date_time,
           n,
           mean_anomaly
         )
-      : [0, Math.PI * 2];
+      : [Math.PI * 2, 0];
 
-    const orbit = new THREE.EllipseCurve(
+    console.log(`Start Angle: ${startAngle}, End Angle: ${endAngle}`);
+
+    const orbitHighlighted = new THREE.EllipseCurve(
       0,
       0,
       a / 1000,
       b / 1000,
       startAngle,
+      simulation ? endAngle : startAngle,
+      false,
+      0
+    );
+    const orbit = new THREE.EllipseCurve(
+      0,
+      0,
+      a / 1000,
+      b / 1000,
       endAngle,
+      startAngle,
       false,
       0
     );
     const points = orbit.getPoints(100);
     const ellipseGeometry = new THREE.BufferGeometry().setFromPoints(points);
-    return ellipseGeometry;
+    const highlightedPoints = orbitHighlighted.getPoints(10000);
+    const highlightedEllipseGeometry = new THREE.BufferGeometry().setFromPoints(
+      highlightedPoints
+    );
+    return [ellipseGeometry, highlightedEllipseGeometry];
   }, [mean_motion, eccentricity, simulation]);
 
   const rotation = useMemo(() => {
@@ -94,7 +113,10 @@ export default function Orbit({
   return (
     <group rotation={[rotation.x, rotation.y, rotation.z]}>
       <line geometry={geometry}>
-        <lineBasicMaterial color="white" />
+        <lineBasicMaterial color="grey" />
+      </line>
+      <line geometry={highlightedGeometry}>
+        <lineBasicMaterial color="red" />
       </line>
     </group>
   );
