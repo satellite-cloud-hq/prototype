@@ -1,3 +1,9 @@
+type simulationType = {
+  id: string;
+  running: boolean;
+  startDateTime: string;
+  endDateTime: string;
+};
 type satellitesType = {
   id: string;
   name: string;
@@ -13,4 +19,4 @@ type orbitType = {
   mean_motion: number;
 };
 
-export type { satellitesType, orbitType };
+export type { simulationType, satellitesType, orbitType };

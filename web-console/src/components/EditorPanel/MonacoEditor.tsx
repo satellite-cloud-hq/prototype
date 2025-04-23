@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { Button, Stack, ButtonGroup, IconButton } from "@mui/material";
+import {
+  Button,
+  Stack,
+  ButtonGroup,
+  IconButton,
+  InputLabel,
+  FormControl,
+  MenuItem,
+  Select,
+} from "@mui/material";
 
 import { PlayArrow, Stop } from "@mui/icons-material";
 
 import Editor from "@monaco-editor/react";
 import {
   handleSchedulePost,
+  handleSimulationsGetAll,
   handleSimulationsPost,
   handleSimulationsStopPost,
 } from "../../utils/data";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import {
   simulationAtom,
   outputtLogAtom,
@@ -106,10 +116,16 @@ export default function MonacoEditor() {
                 });
 
                 console.log("Response:", res);
-                // alert("App file uploaded successfully");
-                const { id, status, start, end } = res;
-                console.log("Simulation ID:", id);
-                console.log("Simulation Status:", status);
+                const {
+                  id,
+                  status,
+                  start_date_time: startDateTime,
+                  end_date_time: endDateTime,
+                } = res;
+
+                // Fetch all the simulations
+                const simulationsRes = await handleSimulationsGetAll();
+                const simulationsList = simulationsRes.items;
 
                 if (evtSource) {
                   evtSource.close();
@@ -154,8 +170,8 @@ export default function MonacoEditor() {
                 setSimulation({
                   id: id,
                   running: status === "running",
-                  start,
-                  end,
+                  startDateTime,
+                  endDateTime,
                 });
               } catch (error) {
                 alert("Error uploading app file."); //TODO show error message
@@ -189,6 +205,14 @@ export default function MonacoEditor() {
             <Stop />
           </IconButton>
         )}
+        <FormControl>
+          <InputLabel id="demo-simple-select-label">id</InputLabel>
+          <Select
+            value={simulation ? simulation.id : ""}
+            label="id"
+            onChange={async (event) => {}}
+          ></Select>
+        </FormControl>
         <Button
           variant="contained"
           color="inherit"

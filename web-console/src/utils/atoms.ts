@@ -3,8 +3,8 @@ import { atom } from "jotai";
 const simulationAtom = atom<{
   id: string;
   running: boolean;
-  start: string;
-  end: string;
+  startDateTime: string;
+  endDateTime: string;
 } | null>(null);
 const outputtLogAtom = atom<string[]>([]);
 const clearOutputLogAtom = atom(null, (get, set) => {
