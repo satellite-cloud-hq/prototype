@@ -5,8 +5,8 @@ import { useLoaderData } from "react-router";
 import JSZip from "jszip";
 
 interface Props {
-  height: number;
-  width: number;
+  height: string;
+  width: string;
 }
 
 export default function ImagesBoard({

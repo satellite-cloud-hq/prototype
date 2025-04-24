@@ -4,6 +4,8 @@ import MonacoEditor from "./components/EditorPanel/MonacoEditor";
 import TerminalScreen from "./components/TerminalScreen";
 import Grafana from "./components/Grafana";
 import SimulationPanel from "./components/SimulationPanel/SimulationPanel";
+import { Box, Stack } from "@mui/material";
+import InterpreterScreen from "./components/InterpreterScreen";
 
 export default function App() {
   return (
@@ -23,7 +25,11 @@ export default function App() {
           </Panel>
           <PanelResizeHandle />
           <Panel defaultSize={40}>
-            <TerminalScreen />
+            <Stack direction="row" spacing={0.1} sx={{ height: '100%' }}>
+              <TerminalScreen />
+              <InterpreterScreen />
+              <Box sx={{ width: '0.1px' }} />
+            </Stack>
           </Panel>
         </PanelGroup>
       </Panel>
@@ -34,7 +40,7 @@ export default function App() {
             <SimulationPanel />
           </Panel>
           <PanelResizeHandle />
-          <Panel defaultSize={60}>
+          <Panel defaultSize={60} style={{ width: '100%' }}>
             <Grafana  />
           </Panel>
         </PanelGroup>
