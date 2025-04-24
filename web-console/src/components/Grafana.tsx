@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, Tab, Tabs } from "@mui/material";
 import ImagesBoard from "./DashboardPanel/ImagesBoard";
 import { handleGetImages } from "../utils/data";
@@ -10,58 +10,32 @@ interface TabPanelProps {
   value: number;
 }
 
-function CustomTabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && children}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
 export default function Grafana() {
   const [value, setValue] = React.useState(0);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 750, height: 300 });
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight,
-        });
-      }
-    };
-
-    updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-
-    return () => window.removeEventListener("resize", updateDimensions);
-  }, []);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
+  console.log(window.innerHeight);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  if (scrollRef.current) {
+    console.log("scrollRef.current", scrollRef.current.offsetHeight);
+  }
+  
+  function a11yProps(index: number) {
+    return {
+      id: `simple-tab-${index}`,
+      'aria-controls': `simple-tabpanel-${index}`,
+    };
+  }
+
   return (
-    <div ref={containerRef}>
+    <div style={{ height: "100%", width: "100%", backgroundColor: 'black' }}>
+      {/* タブ部分 */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'gray' }}>
-      <Tabs
+        <Tabs
           value={value}
           onChange={handleChange}
           textColor="inherit"
@@ -79,24 +53,25 @@ export default function Grafana() {
           <Tab label="./images" {...a11yProps(1)} />
         </Tabs>
       </Box>
-      <CustomTabPanel value={value} index={0}>
+
+      { value === 0 && (
         <iframe
           src="http://localhost:3000/public-dashboards/6fefc76edf5c450ba3a4e2d27508ed0f"
-          height={dimensions.height}
-          width={dimensions.width}
           style={{
+            width: "100%",
+            height: "100%",
             border: "none",
             overflow: "hidden",
             backgroundColor: "black",
           }}
-        ></iframe>
-      </CustomTabPanel>
-      <CustomTabPanel value={value} index={1}>
-        <ImagesBoard
-          height={dimensions.height}
-          width={dimensions.width}
         />
-      </CustomTabPanel>
+      )}
+      { value === 1 && (
+        <ImagesBoard
+          width={"100%"}
+          height={"100%"}
+        />
+      )}
     </div>
   );
 }
