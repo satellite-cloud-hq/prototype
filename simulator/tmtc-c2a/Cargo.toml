@@ -1,0 +1,43 @@
+[package]
+name = "tmtc_c2a"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+funty = "2"
+anyhow = { version = "1", features = ["backtrace"] }
+async-trait = "0.1"
+chrono = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+clap = { version = "4", features = ["derive", "env"] }
+futures = "0.3"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+http = "0.2"
+tower = "0.4"
+tower-http = { version = "0.4", features = ["trace", "cors"] }
+tokio = { version = "1", features = ["full"] }
+prost = "0.12"
+prost-types = "0.12"
+tonic = { version = "0.11", features = ["tls", "tls-roots-common", "tls-webpki-roots"] }
+tonic-health = "0.11"
+tonic-reflection = "0.11"
+tonic-web = "0.11"
+axum = { version = "0.6", default-features = false, features = ["http1", "tokio"] }
+mime_guess = "2.0.4"
+sentry = { version = "0.34", default-features = false, features = ["backtrace", "contexts", "panic", "rustls", "reqwest"] }
+sentry-tracing = "0.34"
+tlmcmddb = "2.5.1"
+kble-socket = { version = "0.4.0", features = ["tungstenite"] }
+tokio-tungstenite = "0.20.1"
+itertools = "0.12.1"
+gaia-ccsds-c2a = "1.1.1"
+gaia-tmtc = "1.1.1"
+structpack = "1.1.1"
+gaia-stub = "1.1.1"
+influxdb2 = "0.5.2"
+
+[build-dependencies]
+tonic-build = "0.11"

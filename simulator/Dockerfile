@@ -66,7 +66,19 @@ WORKDIR /root/
 COPY /requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN apt-get install -y libprotobuf-dev parallel libssl-dev pkg-config
+
+WORKDIR /root/aobc-sils/c2a-aobc
+RUN npm run build:tlmcmddb
+
+WORKDIR /root/
+COPY /run_tmtc.sh .
 COPY /runner_api.py .
+
+# COPY /tmtc-c2a /root/tmtc-c2a
+# WORKDIR /root/tmtc-c2a
+# RUN cargo install --path .
+
 
 # FastAPIサーバーを起動
 CMD ["uvicorn", "runner_api:app", "--host", "0.0.0.0", "--port", "80", "--reload"]

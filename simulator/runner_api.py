@@ -12,6 +12,8 @@ from influxdb_client import Point, WritePrecision
 from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
 from datetime import datetime, timedelta
 import uuid
+import os
+import signal
 
 app = FastAPI()
 
@@ -23,6 +25,8 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 S2E_WORKING_DIR = Path('./aobc-sils/s2e/')
 S2E_EXEC_FILE = Path('./build/S2E_AOBC')
 S2E_LOG_DIR = Path('./aobc-sils/s2e/logs/')
+
+TMTC_WORKING_DIR = Path('./')
 
 LOGDB_URL = 'http://log-db:8086/'
 LOGDB_ORG = 'satellite-cloud'
@@ -51,13 +55,16 @@ class Simulation:
         self.queue = asyncio.Queue()
 
         asyncio.create_task(self.read_and_insert_log())
-        asyncio.create_task(self.run_and_stream())
+        asyncio.create_task(self.run_app_and_stream())
+        asyncio.create_task(self.run_tmtc())
 
     def stop(self):
         if self.s2e_process and self.s2e_process.returncode is None:
             self.s2e_process.terminate()
         if self.app_process and self.app_process.returncode is None:
             self.app_process.terminate()
+        if self.tmtc_process and self.tmtc_process.returncode is None:
+            os.killpg(self.tmtc_process.pid, signal.SIGTERM)
         self.status = self.Status.STOPPED
 
     async def read_and_insert_log(self):
@@ -126,8 +133,7 @@ class Simulation:
                     if not success:
                         raise ValueError(f'Failed to write points to InfluxDB, {success}')
 
-
-    async def run_and_stream(self):
+    async def run_app_and_stream(self):
         print('running app')
         self.app_process = await asyncio.create_subprocess_exec(
             "python", '-u', str(self.app_path),
@@ -153,6 +159,14 @@ class Simulation:
         await self.app_process.wait()
         await self.queue.put("event: done\ndata: [execution finished]\n\n")
         self.app_path.unlink()
+
+    async def run_tmtc(self):
+        print('running tmtc')
+        self.tmtc_process = await asyncio.create_subprocess_exec(
+            'bash', 'run_tmtc.sh', self.id, cwd=str(TMTC_WORKING_DIR), 
+            start_new_session=True, stdout=None, stderr=None,
+        )
+        return await self.tmtc_process.wait()
 
     def to_dict(self):
         return {

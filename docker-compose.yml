@@ -65,6 +65,10 @@ services:
       - "8920:80"
     tty: true
     platform: linux/x86_64
+    volumes:
+      - ./simulator/tmtc-c2a:/root/tmtc-c2a
+      - cargo-target:/root/tmtc-c2a/target
     
 volumes:
   grafana-storage:
+  cargo-target:
