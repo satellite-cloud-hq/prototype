@@ -1,10 +1,9 @@
 from typing import Any
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from httpx import AsyncClient, HTTPStatusError
 import json
-from fastapi.responses import FileResponse
 import os
 import zipfile
 from io import BytesIO
@@ -137,6 +136,30 @@ async def get_simulation_output(simulation_id: str):
 
     except HTTPStatusError as e:
         raise HTTPException(status_code=e.response.status_code, detail=str(e.response.text))
+
+@app.post("/simulations/{simulation_id}/repl")
+async def execute_python_code(
+    simulation_id: str,
+    condition: UploadFile = File(...),
+    app: UploadFile = File(...)
+):
+    """
+    simulator 内でpython REPLを動かす
+    指定したシミュレーションにおけるpythonコードを実行する.
+    """
+    try:
+        async with AsyncClient() as client:
+            response = await client.post(
+                SIMULATOR_API,
+                files={"app": (app.filename, await app.read(), app.content_type)},
+                data={"condition": json.dumps(generate_schedule(await condition.read()))},
+            )
+        response.raise_for_status()
+        return response.json()
+    except HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=str(e.response.text))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     
 @app.get("/simulations/{simulation_id}/images")
 async def get_simulation_output(simulation_id: str):

@@ -1,53 +1,42 @@
 import React, { useEffect, useRef, useState } from "react";
-import { loadPyodide } from "pyodide";
+import { handleSimulationsOutputGet, handleSimulationsPythonRepl } from "../utils/data";
+import { useLoaderData } from "react-router";
+import { defaultFiles, useLocalStorage } from "../utils/customHooks";
 
 export default function InterpreterScreen() {
+  const { simulation } = useLoaderData();
+  const id = simulation?.id;
   const [outputLog, setOutputLog] = useState<string[]>([]);
   const [pythonInput, setPythonInput] = useState<string>("");
-  const [pyodide, setPyodide] = useState<any>(null);
+  const [files, setFiles] = useLocalStorage("files", defaultFiles);
 
   const appendOutputLog = (log: string) => {
     setOutputLog((prev) => [...prev, log]);
   };
 
-  useEffect(() => {
-    const initPyodide = async () => {
-      const pyodideInstance = await loadPyodide();
-
-      // 標準出力をキャプチャ
-      pyodideInstance.setStdout({
-        batched: (output: string) => {
-          appendOutputLog(output);
-        },
-      });
-
-      pyodideInstance.setStderr({
-        batched: (error: string) => {
-          appendOutputLog(`Error: ${error}`);
-        },
-      });
-
-      setPyodide(pyodideInstance);
-      appendOutputLog("Python interpreter initialized.\r\n");
-    };
-    initPyodide();
-  }, []);
-
   // Python コードを実行
   const executePythonCode = async () => {
-    if (!pyodide) {
-      appendOutputLog("Python interpreter is not ready.\r\n");
-      return;
-    }
     try {
-      appendOutputLog(`>>> ${pythonInput}\r\n`);
-      const result = pyodide.runPython(pythonInput);
-      if (result !== undefined) {
-        appendOutputLog(`${result}\r\n`);
+      appendOutputLog(`>>> ${pythonInput}\r\n`); // 入力されたコードをログに追加
+      // サーバーに Python コードを送信
+      const result = await handleSimulationsPythonRepl({
+        simulationId: id,
+        conditionFileContent: files["config.yaml"].value,
+        code: pythonInput
+      });
+      // サーバーからのレスポンスをログに追加
+      if (result) {
+        appendOutputLog(`Simulation ID: ${result.id}\r\n`);
+      }
+      const replResult = await handleSimulationsOutputGet(result.id);
+      console.log("REPL Result:", replResult);
+      if (replResult) {
+        appendOutputLog(`Result\r\n`);
       }
     } catch (error) {
       appendOutputLog(`Error: ${error}\r\n`);
     }
+  
     setPythonInput(""); // 入力フィールドをクリア
   };
 
