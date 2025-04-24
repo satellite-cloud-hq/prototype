@@ -1,12 +1,10 @@
 // This file is deprecated and will be removed in the future.
 import React, {
   useRef,
-  useCallback,
   useState,
-  useMemo,
   useEffect,
 } from "react";
-import { Button, ButtonGroup, Stack } from "@mui/material";
+import { Button, ButtonGroup } from "@mui/material";
 import Globe from "react-globe.gl";
 import {
   handleReousrcesGroundStationsGet,

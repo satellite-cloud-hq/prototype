@@ -143,6 +143,20 @@ const handleSimulationsOutputGet = async (simulationId: string) => {
   }
 };
 
+// GET /simulations/:id/output/images
+const handleGetImages = async (simulationId: string) => {
+  try {
+    const res = await apiClient.get(`/simulations/${simulationId}/images`, {
+      responseType: "arraybuffer",
+    });
+    console.log(res);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export {
   handleSchedulePost,
   handleSimulationsPost,
@@ -152,4 +166,5 @@ export {
   handleSimulationsGetAll,
   handleReousrcesGroundStationsGet,
   handleSimulationsOutputGet,
+  handleGetImages,
 };

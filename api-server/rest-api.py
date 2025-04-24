@@ -4,6 +4,10 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from httpx import AsyncClient, HTTPStatusError
 import json
+from fastapi.responses import FileResponse
+import os
+import zipfile
+from io import BytesIO
 
 SIMULATOR_API = 'http://simulator'
 
@@ -133,6 +137,39 @@ async def get_simulation_output(simulation_id: str):
 
     except HTTPStatusError as e:
         raise HTTPException(status_code=e.response.status_code, detail=str(e.response.text))
+    
+@app.get("/simulations/{simulation_id}/images")
+async def get_simulation_output(simulation_id: str):
+    """
+    シミュレーション画像取得
+    指定したシミュレーションにおける画像を取得する．
+    """
+    try:
+        image_dir = f"./images-demo"
+
+        # ディレクトリが存在するか確認
+        if not os.path.exists(image_dir) or not os.path.isdir(image_dir):
+            raise HTTPException(status_code=404, detail="Image directory not found")
+
+        # ZIP ファイルをメモリ上に作成
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for root, _, files in os.walk(image_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, image_dir)  # ZIP 内の相対パス
+                    zip_file.write(file_path, arcname)
+
+        # メモリ上の ZIP ファイルを返す
+        zip_buffer.seek(0)
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={"Content-Disposition": f"attachment; filename={simulation_id}_images.zip"}
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/simulations/{simulation_id}/stop")
 async def stop_simulation(simulation_id: str):

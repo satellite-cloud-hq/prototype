@@ -34,8 +34,8 @@ export default function App() {
             <SimulationPanel />
           </Panel>
           <PanelResizeHandle />
-          <Panel defaultSize={40}>
-            <Grafana />
+          <Panel defaultSize={60}>
+            <Grafana  />
           </Panel>
         </PanelGroup>
       </Panel>
