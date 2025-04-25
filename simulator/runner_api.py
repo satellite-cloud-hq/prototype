@@ -163,7 +163,8 @@ class Simulation:
     async def run_tmtc(self):
         print('running tmtc')
         self.tmtc_process = await asyncio.create_subprocess_exec(
-            'bash', 'run_tmtc.sh', self.id, cwd=str(TMTC_WORKING_DIR), 
+            'bash', 'run_tmtc.sh', self.id, str(int(self.start_datetime.timestamp() * 1000)),
+            cwd=str(TMTC_WORKING_DIR), 
             start_new_session=True, stdout=None, stderr=None,
         )
         return await self.tmtc_process.wait()
