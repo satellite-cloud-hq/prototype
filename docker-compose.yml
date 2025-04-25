@@ -53,6 +53,8 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=satellite-cloud
       - DOCKER_INFLUXDB_INIT_BUCKET=simulation
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=admin-token
+    volumes:
+      - ./log-db/init-scripts:/docker-entrypoint-initdb.d
 
   simulator:
     container_name: simulator
