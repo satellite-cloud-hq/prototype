@@ -122,10 +122,8 @@ async fn main() -> Result<()> {
 
     let all_tmiv_names = tlm_registry.all_tmiv_names();
     let last_tmiv_store = Arc::new(LastTmivStore::new(all_tmiv_names));
-    let store_last_tmiv_hook = telemetry::StoreLastTmivHook::new(last_tmiv_store.clone());
     let store_to_influxdb_hook = influxdb::StoreToInfluxDBHook::new(args.simulation_id, args.simulation_start_ms);
     let tlm_handler = handler::Builder::new()
-        // .before_hook(store_last_tmiv_hook)
         .before_hook(store_to_influxdb_hook)
         .option_layer(recorder_layer.clone())
         .build(tlm_bus.clone());
