@@ -1,42 +1,55 @@
 import React, { useEffect, useRef, useState } from "react";
-import { handleSimulationsOutputGet, handleSimulationsPythonRepl } from "../utils/data";
 import { useLoaderData } from "react-router";
-import { defaultFiles, useLocalStorage } from "../utils/customHooks";
 
 export default function InterpreterScreen() {
   const { simulation } = useLoaderData();
   const id = simulation?.id;
   const [outputLog, setOutputLog] = useState<string[]>([]);
   const [pythonInput, setPythonInput] = useState<string>("");
-  const [files, setFiles] = useLocalStorage("files", defaultFiles);
+  const [socket, setSocket] = useState<WebSocket | null>(null);
 
   const appendOutputLog = (log: string) => {
     setOutputLog((prev) => [...prev, log]);
   };
 
-  // Python コードを実行
-  const executePythonCode = async () => {
-    try {
-      appendOutputLog(`>>> ${pythonInput}\r\n`); // 入力されたコードをログに追加
-      // サーバーに Python コードを送信
-      const result = await handleSimulationsPythonRepl({
-        simulationId: id,
-        conditionFileContent: files["config.yaml"].value,
-        code: pythonInput
-      });
-      // サーバーからのレスポンスをログに追加
-      if (result) {
-        appendOutputLog(`Simulation ID: ${result.id}\r\n`);
-      }
-      const replResult = await handleSimulationsOutputGet(result.id);
-      console.log("REPL Result:", replResult);
-      if (replResult) {
-        appendOutputLog(`Result\r\n`);
-      }
-    } catch (error) {
-      appendOutputLog(`Error: ${error}\r\n`);
+  // WebSocket 接続を初期化
+  useEffect(() => {
+    if (!id) return;
+
+    const ws = new WebSocket(`ws://localhost:8000/simulations/${id}/repl`);
+    console.log("Websocket endpoint is ",ws)
+    setSocket(ws);
+
+    ws.onopen = () => {
+      appendOutputLog("WebSocket connection established.\r\n");
+    };
+
+    ws.onmessage = (event) => {
+      appendOutputLog(event.data);
+    };
+
+    ws.onerror = (event) => {
+      console.error("WebSocket error:", event);
+      appendOutputLog(`WebSocket error\r\n`);
+    };
+
+    ws.onclose = () => {
+      appendOutputLog("WebSocket connection closed.\r\n");
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [id]);
+
+  // Python コードを送信
+  const executePythonCode = () => {
+    appendOutputLog(`>>> ${pythonInput}\r\n`);
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      appendOutputLog("WebSocket is not connected.\r\n");
+    } else {
+      socket.send(pythonInput);
     }
-  
     setPythonInput(""); // 入力フィールドをクリア
   };
 

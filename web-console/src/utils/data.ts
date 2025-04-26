@@ -156,46 +156,6 @@ const handleGetImages = async (simulationId: string) => {
   }
 };
 
-const handleSimulationsPythonRepl = async ({
-  simulationId,
-  conditionFileContent,
-  code,
-}: {
-  simulationId: string;
-  conditionFileContent: string;
-  code: string;
-}) => {
-  try {
-    const conditionFileBlob = new Blob([conditionFileContent], {
-      type: "text/yaml",
-    });
-    const conditionFile = new File([conditionFileBlob], "config.yaml", {
-      type: "text/yaml",
-    });
-    const appFileBlob = new Blob([code], { type: "text/python" });
-
-    const appFile = new File([appFileBlob], "app.py", {
-      type: "text/python",
-    });
-
-    const formData = new FormData();
-
-    formData.append("condition", conditionFile);
-    formData.append("app", appFile);
-
-    const res = await apiClient.post(`/simulations/${simulationId}/repl`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    return res.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
 export {
   handleSchedulePost,
   handleSimulationsPost,
@@ -206,5 +166,4 @@ export {
   handleReousrcesGroundStationsGet,
   handleSimulationsOutputGet,
   handleGetImages,
-  handleSimulationsPythonRepl,
 };

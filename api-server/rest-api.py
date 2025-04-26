@@ -7,6 +7,7 @@ import json
 import os
 import zipfile
 from io import BytesIO
+from fastapi import WebSocket, WebSocketDisconnect
 
 SIMULATOR_API = 'http://simulator'
 
@@ -137,29 +138,37 @@ async def get_simulation_output(simulation_id: str):
     except HTTPStatusError as e:
         raise HTTPException(status_code=e.response.status_code, detail=str(e.response.text))
 
-@app.post("/simulations/{simulation_id}/repl")
-async def execute_python_code(
-    simulation_id: str,
-    condition: UploadFile = File(...),
-    app: UploadFile = File(...)
-):
+@app.websocket("/simulations/{simulation_id}/repl")
+async def websocket_repl(websocket: WebSocket, simulation_id: str):
     """
-    simulator 内でpython REPLを動かす
-    指定したシミュレーションにおけるpythonコードを実行する.
+    WebSocket エンドポイント
+    指定したシミュレーションにおける Python REPL を動かす
     """
+    await websocket.accept()
     try:
-        async with AsyncClient() as client:
-            response = await client.post(
-                SIMULATOR_API,
-                files={"app": (app.filename, await app.read(), app.content_type)},
-                data={"condition": json.dumps(generate_schedule(await condition.read()))},
-            )
-        response.raise_for_status()
-        return response.json()
+        async with AsyncClient(timeout=None) as client:
+            while True:
+                # クライアントからの Python コードを受信
+                data = await websocket.receive_text()
+                if not data:
+                    break
+
+                # シミュレーターにコードを送信
+                response = await client.post(
+                    f"{SIMULATOR_API}/{simulation_id}/repl",
+                    json={"code": data}
+                )
+                response.raise_for_status()
+
+                # シミュレーターからの結果をクライアントに送信
+                result = response.json().get("result", "")
+                await websocket.send_text(result)
+    except WebSocketDisconnect:
+        print(f"WebSocket disconnected for simulation {simulation_id}")
     except HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=str(e.response.text))
+        await websocket.send_text(f"Error: {e.response.text}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        await websocket.send_text(f"Error: {str(e)}")
     
 @app.get("/simulations/{simulation_id}/images")
 async def get_simulation_output(simulation_id: str):
