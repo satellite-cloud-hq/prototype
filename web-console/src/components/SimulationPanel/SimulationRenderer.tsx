@@ -2,17 +2,11 @@ import React from "react";
 import * as THREE from "three";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import Orbit from "./Orbit";
-import Earth from "./Earth";
-import { satellitesType, simulationType } from "../../utils/types";
+import Earth from "../Three/Earth";
+import Satellite from "../Three/Satellite";
 
-export default function SimulationRenderer({
-  simulation,
-  satellitesData,
-}: {
-  simulation: simulationType | null;
-  satellitesData: satellitesType[];
-}) {
+export default function SimulationRenderer({ simulationResult }) {
+  console.log("Simulation List:", simulationResult);
   return (
     <Canvas
       gl={{
@@ -32,19 +26,11 @@ export default function SimulationRenderer({
     >
       <OrbitControls />
       <group rotation={[0, 0, (23.4 * Math.PI) / 180]}>
-        <Earth />
-        {satellitesData.map((satellite) => {
-          return (
-            <Orbit
-              key={satellite.id}
-              simulation={simulation}
-              satellites={satellite}
-            />
-          );
-        })}
+        <Earth rotationSpeed={0} />
+        <Satellite simulationResult={simulationResult} />
       </group>
       <directionalLight position={[-2, 0, 0]} intensity={1.0} />
-      <ambientLight intensity={0.15} />
+      <ambientLight intensity={0.25} />
     </Canvas>
   );
 }

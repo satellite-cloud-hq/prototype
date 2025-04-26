@@ -3,7 +3,11 @@ import * as THREE from "three";
 import { useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 
-export default function Earth() {
+export default function Earth({
+  rotationSpeed = 0.001,
+}: {
+  rotationSpeed?: number;
+}) {
   const earthTexture = useTexture("/textures/00_earthmap1k.jpg");
   const earthLightsTexture = useTexture("/textures/03_earthlights1k.jpg");
   const earthCloudsTexture = useTexture("/textures/04_earthcloudmap.jpg");
@@ -23,9 +27,9 @@ export default function Earth() {
     ) {
       return;
     }
-    earthMesh.current.rotation.y += 0.001;
-    earthLightsMesh.current.rotation.y += 0.001;
-    earthCloudsMesh.current.rotation.y += 0.001;
+    earthMesh.current.rotation.y += rotationSpeed;
+    earthLightsMesh.current.rotation.y += rotationSpeed;
+    earthCloudsMesh.current.rotation.y += rotationSpeed;
   });
 
   return (
