@@ -1,13 +1,15 @@
 from typing import Any
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from httpx import AsyncClient, HTTPStatusError
 import json
-from fastapi.responses import FileResponse
 import os
 import zipfile
 from io import BytesIO
+from fastapi import WebSocket, WebSocketDisconnect
+import sys
+import io
 
 SIMULATOR_API = 'http://simulator'
 
@@ -137,6 +139,55 @@ async def get_simulation_output(simulation_id: str):
 
     except HTTPStatusError as e:
         raise HTTPException(status_code=e.response.status_code, detail=str(e.response.text))
+
+@app.websocket("/simulations/{simulation_id}/repl")
+async def websocket_repl(websocket: WebSocket, simulation_id: str):
+    """
+    WebSocket エンドポイント
+    指定したシミュレーションにおける Python REPL を動かす
+    """
+    await websocket.accept()
+    local_vars = {}
+    try:
+        async with AsyncClient(timeout=None) as client:
+            while True:
+                # クライアントからの Python コードを受信
+                data = await websocket.receive_text()
+                if not data:
+                    break
+
+                # TODO: シミュレーション内でいずれは実行する
+                try:
+                    # 標準出力をキャプチャするためにリダイレクト
+                    stdout = io.StringIO()
+                    sys.stdout = stdout
+
+                    # 受け取ったコードを実行
+                    if "=" in data:
+                        exec(data, {}, local_vars)
+                    else:
+                        exec(f"print({data})", {}, local_vars)  # セキュリティリスクに注意
+
+                    # 実行結果を取得
+                    result = stdout.getvalue().strip()  # 標準出力の内容を取得
+                    if not result and "result" in local_vars:
+                        result = local_vars["result"]  # 'result' 変数が設定されている場合はその値を使用
+                    elif not result:
+                        return
+                except Exception as e:
+                    result = f"Error: {str(e)}"
+                finally:
+                    # 標準出力を元に戻す
+                    sys.stdout = sys.__stdout__
+
+                # 実行結果をクライアントに送信
+                await websocket.send_text(result)
+    except WebSocketDisconnect:
+        print(f"WebSocket disconnected for simulation {simulation_id}")
+    except HTTPStatusError as e:
+        await websocket.send_text(f"Error: {e.response.text}")
+    except Exception as e:
+        await websocket.send_text(f"Error: {str(e)}")
     
 @app.get("/simulations/{simulation_id}/images")
 async def get_simulation_output(simulation_id: str):
