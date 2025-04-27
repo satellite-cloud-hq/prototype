@@ -1,26 +1,53 @@
+import { Tabs, Tab, Box } from "@mui/material";
 import React from "react";
-import { useLoaderData } from "react-router";
-import SimulationRenderer from "./SimulationRenderer";
-import { useAtomValue } from "jotai";
-import { getCurrentSimulationTimeAtom } from "../../utils/atoms";
+import SchedulerScreen from "./SchedulerScreen/SchedulerScreen";
+import SimulationScreen from "./SimulationScreen/SimulationScreen";
 
 export default function SimulationPanel() {
-  const { simulationResult } = useLoaderData();
+  function a11yProps(index: number) {
+    return {
+      id: `simple-tab-${index}`,
+      "aria-controls": `simple-tabpanel-${index}`,
+    };
+  }
 
-  const currentSimulationTime = useAtomValue(getCurrentSimulationTimeAtom);
-  console.log("Simulation List:", simulationResult);
+  const [value, setValue] = React.useState(0);
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
   return (
     <div
       style={{
         position: "relative",
+        display: "flex",
+        flexDirection: "column",
+
         width: "100%",
         height: "100%",
       }}
     >
-      <div style={{ position: "absolute", color: "white", zIndex: 1 }}>
-        {currentSimulationTime}
-      </div>
-      <SimulationRenderer simulationResult={simulationResult} />
+      <Box sx={{ borderBottom: 1, borderColor: "divider", bgcolor: "gray" }}>
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          textColor="inherit"
+          indicatorColor="secondary"
+          sx={{
+            "& .MuiTab-root": {
+              color: "white",
+            },
+            "& .MuiTabs-indicator": {
+              backgroundColor: "white",
+            },
+          }}
+        >
+          <Tab label="./dashboard" {...a11yProps(0)} />
+          <Tab label="./images" {...a11yProps(1)} />
+        </Tabs>
+      </Box>
+
+      {value === 0 && <SchedulerScreen />}
+      {value === 1 && <SimulationScreen />}
     </div>
   );
 }

@@ -2,9 +2,9 @@ import React from "react";
 import * as THREE from "three";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import Orbit from "../Three/Orbit";
-import Earth from "../Three/Earth";
-import { satellitesType, simulationType } from "../../utils/types";
+import Orbit from "../../Three/Orbit";
+import Earth from "../../Three/Earth";
+import { satellitesType, simulationType } from "../../../utils/types";
 
 export default function SchedulerRenderer({
   simulation,

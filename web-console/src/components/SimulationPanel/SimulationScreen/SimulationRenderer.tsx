@@ -2,8 +2,8 @@ import React from "react";
 import * as THREE from "three";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import Earth from "../Three/Earth";
-import Satellite from "../Three/Satellite";
+import Earth from "../../Three/Earth";
+import Satellite from "../../Three/Satellite";
 
 export default function SimulationRenderer({ simulationResult }) {
   console.log("Simulation List:", simulationResult);
