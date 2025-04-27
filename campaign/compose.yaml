@@ -1,0 +1,35 @@
+services:
+
+  tlmcmd-bridge:
+    container_name: tlmcmd-bridge-${CAMPAIGN_ID}
+    build:
+      dockerfile: tlmcmd-bridge/Dockerfile
+    volumes:
+      - tmtc-cargo-target:/tmtc/target
+    environment:
+      - CAMPAIGN_ID=${CAMPAIGN_ID}
+      - CAMPAIGN_START_TIMESTAMP_MS=${CAMPAIGN_START_TIMESTAMP_MS}
+    networks:
+      control:
+      campaign:
+
+  kble:
+    container_name: kble-${CAMPAIGN_ID}
+    build:
+      dockerfile: kble/Dockerfile
+    environment:
+      - CAMPAIGN_ID=${CAMPAIGN_ID}
+    networks:
+      campaign:
+    depends_on:
+      - tlmcmd-bridge
+    
+volumes:
+  tmtc-cargo-target:
+  s2e-log:
+  app-upload: 
+
+networks:
+  control:
+    external: true
+  campaign:

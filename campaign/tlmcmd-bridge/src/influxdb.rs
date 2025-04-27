@@ -14,16 +14,16 @@ const LOGDB_TOKEN: &str = "admin-token";
 
 #[derive(Clone)]
 pub struct StoreToInfluxDBHook {
-    simulation_id: String,
-    start_timestamp_ms: u64,
+    campaign_id: String,
+    campaign_start_timestamp_ms: u64,
     client: Arc<Client>,
 }
 
 impl StoreToInfluxDBHook {
-    pub fn new(simulation_id: impl Into<String>, start_timestamp_ms: u64) -> Self {
+    pub fn new(campaign_id: impl Into<String>, campaign_start_timestamp_ms: u64) -> Self {
         Self { 
-            simulation_id: simulation_id.into(), 
-            start_timestamp_ms,
+            campaign_id: campaign_id.into(), 
+            campaign_start_timestamp_ms,
             client: Arc::new(Client::new(LOGDB_URL, LOGDB_ORG, LOGDB_TOKEN)), 
         }
     }
@@ -38,7 +38,7 @@ impl Hook<Arc<Tmiv>> for StoreToInfluxDBHook {
 
         // println!("Writing TMIV to InfluxDB: {}", tmiv.name);
 
-        let mut builder = influxdb2::models::DataPoint::builder(&self.simulation_id)
+        let mut builder = influxdb2::models::DataPoint::builder(&self.campaign_id)
             .tag("name", &tmiv.name);
 
         let mut timestamp = None;
@@ -80,7 +80,7 @@ impl Hook<Arc<Tmiv>> for StoreToInfluxDBHook {
         }
 
         if let Some(ms) = timestamp {
-            builder = builder.timestamp(ms + self.start_timestamp_ms as i64);
+            builder = builder.timestamp(ms + self.campaign_start_timestamp_ms as i64);
 
             let points = vec![builder.build()?];
             self.client.write_with_precision(

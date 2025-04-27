@@ -11,7 +11,7 @@ from fastapi.responses import StreamingResponse
 from influxdb_client import Point, WritePrecision
 from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
 from datetime import datetime, timedelta
-import uuid
+from cuid2 import Cuid
 import os
 import signal
 
@@ -19,14 +19,12 @@ app = FastAPI()
 
 simluations = {}
 
-UPLOAD_DIR = Path('./uploads')
-UPLOAD_DIR.mkdir(exist_ok=True)
+CUID_GENERATOR: Cuid = Cuid(length=10)
 
-S2E_WORKING_DIR = Path('./aobc-sils/s2e/')
-S2E_EXEC_FILE = Path('./build/S2E_AOBC')
-S2E_LOG_DIR = Path('./aobc-sils/s2e/logs/')
+APP_DIR = Path('./app')
+APP_DIR.mkdir(exist_ok=True)
 
-TMTC_WORKING_DIR = Path('./')
+S2E_LOG_DIR = Path('/s2e-logs/')
 
 LOGDB_URL = 'http://log-db:8086/'
 LOGDB_ORG = 'satellite-cloud'
@@ -35,36 +33,49 @@ LOGDB_TOKEN = 'admin-token'
 class Simulation:
 
     class Status(StrEnum):
+        INITIALIZED = 'initialized'
         RUNNING   = 'running'
         COMPLETED = 'completed'
         STOPPED   = 'stopped'
         FAILED    = 'failed'
 
-    def __init__(self, condition: Dict, app_path: Path):
-        self.id = str(uuid.uuid4())
+    def __init__(self, condition: Dict):
+        self.id = str(CUID_GENERATOR.generate())
 
-        self.status = self.Status.RUNNING
-        self.app_path = app_path
+        filename = f"app-{self.id}.py"
+        self.app_path = APP_DIR / filename
 
         self.start_datetime = datetime(2023, 2, 10)
         self.end_datetime = datetime(2023, 2, 10) + timedelta(seconds=5000)
 
+        self.status = self.Status.INITIALIZED
+
     def run(self):
-        self.s2e_process = subprocess.Popen(str(S2E_EXEC_FILE), cwd=str(S2E_WORKING_DIR))
 
         self.queue = asyncio.Queue()
 
-        asyncio.create_task(self.read_and_insert_log())
-        asyncio.create_task(self.run_app_and_stream())
-        asyncio.create_task(self.run_tmtc())
+        cmd = [
+           "docker", "compose",
+           "-f", "compose.yaml",
+           "-p", f'campaign-{self.id}',
+           "up", 
+        #    "-d",
+        ]
+        env = os.environ.copy()
+        env.update({
+            "CAMPAIGN_ID": self.id,
+            "CAMPAIGN_START_TIMESTAMP_MS": str(int(self.start_datetime.timestamp() * 1000)),
+        })
+        subprocess.run(cmd, env=env)
+
+        # asyncio.create_task(self.read_and_insert_log())
+        # asyncio.create_task(self.run_app_and_stream())
+
+        self.status = self.Status.RUNNING
 
     def stop(self):
-        if self.s2e_process and self.s2e_process.returncode is None:
-            self.s2e_process.terminate()
-        if self.app_process and self.app_process.returncode is None:
-            self.app_process.terminate()
-        if self.tmtc_process and self.tmtc_process.returncode is None:
-            os.killpg(self.tmtc_process.pid, signal.SIGTERM)
+        # if self.app_process and self.app_process.returncode is None:
+            # self.app_process.terminate()
         self.status = self.Status.STOPPED
 
     async def read_and_insert_log(self):
@@ -160,14 +171,6 @@ class Simulation:
         await self.queue.put("event: done\ndata: [execution finished]\n\n")
         self.app_path.unlink()
 
-    async def run_tmtc(self):
-        print('running tmtc')
-        self.tmtc_process = await asyncio.create_subprocess_exec(
-            'bash', 'run_tmtc.sh', self.id, str(int(self.start_datetime.timestamp() * 1000)),
-            cwd=str(TMTC_WORKING_DIR), 
-            start_new_session=True, stdout=None, stderr=None,
-        )
-        return await self.tmtc_process.wait()
 
     def to_dict(self):
         return {
@@ -202,14 +205,12 @@ async def run_simulation(
     新規シミュレーションを実行する．
     '''
     try:
-        filename = f"{uuid.uuid4().hex}.py"
-        file_path = UPLOAD_DIR / filename
+        sim = Simulation(json.loads(condition))
+        simluations[sim.id] = sim
 
-        with file_path.open("wb") as f:
+        with sim.app_path.open("wb") as f:
             shutil.copyfileobj(app.file, f)
         
-        sim = Simulation(json.loads(condition), file_path)
-        simluations[sim.id] = sim
         sim.run()
 
         return sim.to_dict()
