@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Tab, Tabs } from "@mui/material";
 import ImagesBoard from "./DashboardPanel/ImagesBoard";
-import { handleGetImages } from "../utils/data";
 import { useLoaderData } from "react-router";
 
 interface TabPanelProps {
@@ -12,6 +11,21 @@ interface TabPanelProps {
 
 export default function Grafana() {
   const [value, setValue] = React.useState(0);
+  const { simulation, simulationResult } = useLoaderData();
+  const simulationId = simulation ? simulation.id : "";
+
+  const startTime =
+    simulationResult && simulationResult.length > 0
+      ? simulationResult[0]._time
+      : null;
+  const endTime =
+    simulationResult && simulationResult.length > 0
+      ? simulationResult[simulationResult.length - 1]._time
+      : null;
+
+  const getGrafanaTime = (isoString: string) => {
+    return new Date(isoString).getTime();
+  };
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -56,15 +70,14 @@ export default function Grafana() {
 
       {value === 0 && (
         <iframe
-          src="http://localhost:3000/public-dashboards/6fefc76edf5c450ba3a4e2d27508ed0f"
-          style={{
-            width: "100%",
-            height: "100%",
-            border: "none",
-            overflow: "hidden",
-            backgroundColor: "black",
-          }}
-        />
+          src={`http://localhost:3000/d/aek4rk7eb8um8d/new-dashboard?orgId=1&from=${
+            startTime ? getGrafanaTime(startTime) : "now-6h"
+          }&to=${
+            endTime ? getGrafanaTime(endTime) : "now"
+          }&timezone=browser&var-id=${simulationId}&kiosk`}
+          width="100%"
+          height="100%"
+        ></iframe>
       )}
       {value === 1 && <ImagesBoard width={"100%"} height={"100%"} />}
     </div>

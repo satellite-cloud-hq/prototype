@@ -8,7 +8,6 @@ export default function SimulationScreen() {
   const { simulationResult } = useLoaderData();
 
   const currentSimulationTime = useAtomValue(getCurrentSimulationTimeAtom);
-  console.log("Simulation List:", simulationResult);
   return (
     <div
       style={{

@@ -14,7 +14,6 @@ export default function SchedulerScreen() {
     useLoaderData();
 
   const scheduler = useAtomValue(schedulerAtom);
-  console.log("Scheduler:", scheduler);
 
   const fetcher = useFetcher();
   return (
