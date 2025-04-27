@@ -102,8 +102,11 @@ export default function Satellite({ simulationResult }) {
   }, [simulationResult]);
 
   return (
-    <group ref={groupRef}>
-      <primitive object={satelliteModel.scene} scale={0.0001} />
-    </group>
+    simulationResult !== null &&
+    simulationResult.length > 0 && (
+      <group ref={groupRef}>
+        <primitive object={satelliteModel.scene} scale={0.0001} />
+      </group>
+    )
   );
 }

@@ -41,8 +41,8 @@ export default function SimulationPanel() {
             },
           }}
         >
-          <Tab label="./dashboard" {...a11yProps(0)} />
-          <Tab label="./images" {...a11yProps(1)} />
+          <Tab label="Scheduler" {...a11yProps(0)} />
+          <Tab label="Simulation" {...a11yProps(1)} />
         </Tabs>
       </Box>
 

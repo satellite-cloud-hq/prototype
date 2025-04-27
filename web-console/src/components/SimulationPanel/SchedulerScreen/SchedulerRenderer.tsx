@@ -44,7 +44,7 @@ export default function SchedulerRenderer({
     >
       <OrbitControls />
       <group rotation={[0, 0, (23.4 * Math.PI) / 180]}>
-        <Earth />
+        <Earth rotationSpeed={0.001} />
         {satellitesData.map((satellite) => {
           return (
             <Orbit
@@ -55,8 +55,8 @@ export default function SchedulerRenderer({
           );
         })}
       </group>
-      <directionalLight position={[-2, 0, 0]} intensity={1.0} />
-      <ambientLight intensity={0.15} />
+      <directionalLight position={[-2, 0, 0]} intensity={2.0} />
+      <ambientLight intensity={0.55} />
     </Canvas>
   );
 }

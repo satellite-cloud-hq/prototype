@@ -29,8 +29,8 @@ export default function SimulationRenderer({ simulationResult }) {
         <Earth rotationSpeed={0} />
         <Satellite simulationResult={simulationResult} />
       </group>
-      <directionalLight position={[-2, 0, 0]} intensity={1.0} />
-      <ambientLight intensity={0.25} />
+      <directionalLight position={[-2, 0, 0]} intensity={2.0} />
+      <ambientLight intensity={0.55} />
     </Canvas>
   );
 }
