@@ -23,29 +23,29 @@ export default function Grafana() {
   if (scrollRef.current) {
     console.log("scrollRef.current", scrollRef.current.offsetHeight);
   }
-  
+
   function a11yProps(index: number) {
     return {
       id: `simple-tab-${index}`,
-      'aria-controls': `simple-tabpanel-${index}`,
+      "aria-controls": `simple-tabpanel-${index}`,
     };
   }
 
   return (
-    <div style={{ height: "100%", width: "100%", backgroundColor: 'black' }}>
+    <div style={{ height: "100%", width: "100%", backgroundColor: "black" }}>
       {/* タブ部分 */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'gray' }}>
+      <Box sx={{ borderBottom: 1, borderColor: "divider", bgcolor: "gray" }}>
         <Tabs
           value={value}
           onChange={handleChange}
           textColor="inherit"
           indicatorColor="secondary"
           sx={{
-            '& .MuiTab-root': {
-              color: 'white',
+            "& .MuiTab-root": {
+              color: "white",
             },
-            '& .MuiTabs-indicator': {
-              backgroundColor: 'white',
+            "& .MuiTabs-indicator": {
+              backgroundColor: "white",
             },
           }}
         >
@@ -54,7 +54,7 @@ export default function Grafana() {
         </Tabs>
       </Box>
 
-      { value === 0 && (
+      {value === 0 && (
         <iframe
           src="http://localhost:3000/public-dashboards/6fefc76edf5c450ba3a4e2d27508ed0f"
           style={{
@@ -66,12 +66,7 @@ export default function Grafana() {
           }}
         />
       )}
-      { value === 1 && (
-        <ImagesBoard
-          width={"100%"}
-          height={"100%"}
-        />
-      )}
+      {value === 1 && <ImagesBoard width={"100%"} height={"100%"} />}
     </div>
   );
 }
