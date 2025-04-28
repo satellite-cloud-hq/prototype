@@ -75,7 +75,16 @@ async function loader({ params }: LoaderFunctionArgs) {
     r["_field"] =~ /^spacecraft_quaternion_i2b_[wxyz]$/ or 
     r["_field"] == "spacecraft_position_i_x[m]" or 
     r["_field"] == "spacecraft_position_i_y[m]" or 
-    r["_field"] == "spacecraft_position_i_z[m]"  
+    r["_field"] == "spacecraft_position_i_z[m]" or 
+    r["_field"] == "spacecraft_latitude[rad]" or
+    r["_field"] == "spacecraft_longitude[rad]" or
+    r["_field"] == "spacecraft_altitude[m]" or
+    r["_field"] == "spacecraft_velocity_i_x[m/s]" or
+    r["_field"] == "spacecraft_velocity_i_y[m/s]" or
+    r["_field"] == "spacecraft_velocity_i_z[m/s]" or
+    r["_field"] == "spacecraft_acceleration_i_x[m/s2]" or
+    r["_field"] == "spacecraft_acceleration_i_y[m/s2]" or
+    r["_field"] == "spacecraft_acceleration_i_z[m/s2]" 
   )
   |> group(columns: ["_measurement", "_field"]) // Group by measurement and field
   |> aggregateWindow(every: 1m, fn: mean, createEmpty: false)

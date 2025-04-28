@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import {
+  currentSimulationAtom,
   currentSimulationTimeAlphaAtom,
   currentSimulationTimeAtom,
   getCurrentSimulationTimeAtom,
@@ -26,6 +27,9 @@ export default function Satellite({ simulationResult }) {
 
   const [currentTime, setCurrentTime] = useAtom(currentSimulationTimeAtom);
   const [nextTime, setNextTime] = useAtom(nextSimulationTimeAtom);
+  const [currentSimulation, setCurrentSimulation] = useAtom(
+    currentSimulationAtom
+  );
   const [alpha, setAlpha] = useAtom(currentSimulationTimeAlphaAtom);
 
   const satelliteModel = useLoader(GLTFLoader, "/models/satellite.glb");
@@ -42,6 +46,7 @@ export default function Satellite({ simulationResult }) {
 
     // Get quaternion values
     const current = simulationResult[currentIndex];
+    setCurrentSimulation(current);
     setCurrentTime(current._time);
     const next = simulationResult[nextIndex];
     setNextTime(next._time);
