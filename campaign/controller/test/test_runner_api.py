@@ -30,5 +30,7 @@ with test_script_path.open("rb") as file:
 # except httpx.ReadTimeout:
 #     pass
 
+time.sleep(20)
+
 response = httpx.post(f'{server}/{simulation_id}/stop')
 print(response.status_code, response.text)

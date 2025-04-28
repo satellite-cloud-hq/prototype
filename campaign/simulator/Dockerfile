@@ -28,3 +28,5 @@ RUN bash s2e_initial_setup.sh
 
 RUN cmake -B build -DUSE_KBLE_MOBC_UART=ON
 RUN cmake --build build -j
+
+CMD ["./build/S2E_AOBC"]

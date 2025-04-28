@@ -1,5 +1,30 @@
 services:
 
+  simulator:
+   container_name: simulator-${CAMPAIGN_ID}
+   build:
+    dockerfile: simulator/Dockerfile
+   volumes:
+     - s2e-log:/root/aobc-sils/s2e/logs/
+   networks:
+      control:
+      campaign:
+
+  simulation-logger:
+    container_name: simulation-logger-${CAMPAIGN_ID}
+    build:
+      dockerfile: simulation-logger/Dockerfile
+    volumes:
+      - s2e-log:/s2e-log
+    environment:
+      - CAMPAIGN_ID=${CAMPAIGN_ID}
+      - CAMPAIGN_START_TIMESTAMP_MS=${CAMPAIGN_START_TIMESTAMP_MS}
+    networks:
+      control:
+      campaign:
+    depends_on:
+      - simulator
+
   tlmcmd-bridge:
     container_name: tlmcmd-bridge-${CAMPAIGN_ID}
     build:
@@ -12,6 +37,8 @@ services:
     networks:
       control:
       campaign:
+    depends_on:
+      - simulator
 
   kble:
     container_name: kble-${CAMPAIGN_ID}

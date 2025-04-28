@@ -47,6 +47,7 @@ COPY aobc-sils/ aobc-sils
 COPY kble/ kble
 COPY tlmcmd-bridge/ tlmcmd-bridge
 COPY simulator/ simulator
+COPY simulation-logger/ simulation-logger
 
 COPY controller/entrypoint.sh . 
 RUN chmod +x /campaign/entrypoint.sh

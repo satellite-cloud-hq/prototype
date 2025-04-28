@@ -55,21 +55,8 @@ services:
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=admin-token
     volumes:
       - ./log-db/init-scripts:/docker-entrypoint-initdb.d
-
-  # simulator:
-  #   container_name: simulator
-  #   build:
-  #     context: ./simulator
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8900:8900"
-  #     - "8910:8910"
-  #     - "8920:80"
-  #   tty: true
-  #   platform: linux/x86_64
-  #   volumes:
-  #     - ./simulator/tmtc-c2a:/root/tmtc-c2a
-  #     - cargo-target:/root/tmtc-c2a/target
+    networks:
+      - control
 
   controller:
     container_name: controller
