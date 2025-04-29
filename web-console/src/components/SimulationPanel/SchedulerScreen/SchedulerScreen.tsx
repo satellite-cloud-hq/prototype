@@ -7,14 +7,8 @@ import { useAtomValue } from "jotai";
 import { schedulerAtom } from "../../../utils/atoms";
 
 export default function SchedulerScreen() {
-  const {
-    simulation,
-    satellites,
-  }: { simulation: simulationType | null; satellites: satellitesType[] } =
-    useLoaderData();
-
   const scheduler = useAtomValue(schedulerAtom);
-  console.log("Scheduler:", scheduler);
+  console.log("Scheduler: ", scheduler);
 
   const fetcher = useFetcher();
   return (
@@ -44,7 +38,7 @@ export default function SchedulerScreen() {
           Get Ground Stations
         </Button>
       </ButtonGroup> */}
-      <SchedulerRenderer simulation={simulation} schedulerData={scheduler} />
+      <SchedulerRenderer schedulerData={scheduler} />
     </div>
   );
 }

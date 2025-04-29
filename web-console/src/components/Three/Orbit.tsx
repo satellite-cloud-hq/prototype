@@ -1,15 +1,19 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
 import { satellitesType, simulationType } from "../../utils/types";
+import { calculateEarthRotation } from "../../utils/calculateEarthRotation";
 
 export default function Orbit({
-  simulation,
-  satellites,
+  schedule,
 }: {
-  simulation: simulationType | null;
-  satellites: satellitesType;
+  schedule: {
+    start_date_time: string;
+    end_date_time: string;
+    satellite: satellitesType;
+  };
 }) {
-  const { orbit } = satellites;
+  const { start_date_time, end_date_time, satellite } = schedule;
+  const { orbit } = satellite;
   const {
     mean_motion,
     eccentricity,
@@ -36,9 +40,9 @@ export default function Orbit({
     const timeDiff = (epochTime - startTime) / 1000; // in seconds
     const totalTime = (endTime - startTime) / 1000; // in seconds
 
-    const startAngle = n * timeDiff + mean_anomaly;
-    const endAngle = n * totalTime + startAngle;
-    console.log(`Total time: ${totalTime}`);
+    const startAngle =
+      n * timeDiff + mean_anomaly - calculateEarthRotation(start);
+    const endAngle = n * totalTime + startAngle - calculateEarthRotation(end);
     return [startAngle, endAngle];
   };
 
@@ -49,16 +53,13 @@ export default function Orbit({
     const a = Math.pow(mu / (n * n), 1 / 3); // semi-major axis
     const b = a * Math.sqrt(1 - eccentricity * eccentricity); // semi-minor axis
 
-    console.log("simulation: " + simulation);
-    const [startAngle, endAngle] = simulation
-      ? calculateSimulationAngle(
-          epoch,
-          simulation.start_date_time,
-          simulation.end_date_time,
-          n,
-          mean_anomaly
-        )
-      : [Math.PI * 2, 0];
+    const [startAngle, endAngle] = calculateSimulationAngle(
+      epoch,
+      start_date_time,
+      end_date_time,
+      n,
+      mean_anomaly
+    );
 
     console.log(`Start Angle: ${startAngle}, End Angle: ${endAngle}`);
 
@@ -67,9 +68,9 @@ export default function Orbit({
       0,
       a / 1000,
       b / 1000,
-      startAngle,
-      simulation ? endAngle : startAngle,
-      false,
+      0.5 * Math.PI - startAngle,
+      0.5 * Math.PI - endAngle,
+      true,
       0
     );
     const orbit = new THREE.EllipseCurve(
@@ -77,8 +78,8 @@ export default function Orbit({
       0,
       a / 1000,
       b / 1000,
-      endAngle,
-      startAngle,
+      0.5 * Math.PI - startAngle,
+      0.5 * Math.PI - endAngle,
       false,
       0
     );
@@ -89,20 +90,17 @@ export default function Orbit({
       highlightedPoints
     );
     return [ellipseGeometry, highlightedEllipseGeometry];
-  }, [mean_motion, eccentricity, simulation]);
+  }, [mean_motion, eccentricity]);
 
   const rotation = useMemo(() => {
     const initRad = THREE.MathUtils.degToRad(90);
-    const raanRad = THREE.MathUtils.degToRad(-raan);
-    const inclinationRad = THREE.MathUtils.degToRad(inclination);
-    const argPeriRad = THREE.MathUtils.degToRad(-argument_of_perigee);
 
     const rotMatrix = new THREE.Matrix4();
 
     rotMatrix.makeRotationX(initRad);
-    rotMatrix.multiply(new THREE.Matrix4().makeRotationZ(raanRad));
-    rotMatrix.multiply(new THREE.Matrix4().makeRotationY(inclinationRad));
-    rotMatrix.multiply(new THREE.Matrix4().makeRotationZ(argPeriRad));
+    rotMatrix.multiply(new THREE.Matrix4().makeRotationZ(-raan));
+    rotMatrix.multiply(new THREE.Matrix4().makeRotationY(inclination));
+    rotMatrix.multiply(new THREE.Matrix4().makeRotationZ(argument_of_perigee));
 
     const euler = new THREE.Euler();
     euler.setFromRotationMatrix(rotMatrix);

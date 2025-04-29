@@ -25,12 +25,10 @@ export default function SimulationRenderer({ simulationResult }) {
       }}
     >
       <OrbitControls />
-      <group rotation={[0, 0, (23.4 * Math.PI) / 180]}>
-        <Earth rotationSpeed={0} />
-        <Satellite simulationResult={simulationResult} />
-      </group>
-      <directionalLight position={[-2, 0, 0]} intensity={2.0} />
-      <ambientLight intensity={0.55} />
+      {/* <Earth rotationSpeed={0} /> */}
+      <Satellite simulationResult={simulationResult} />
+      <directionalLight position={[2, 0, 0]} intensity={4.0} />
+      <ambientLight intensity={0.25} />
     </Canvas>
   );
 }

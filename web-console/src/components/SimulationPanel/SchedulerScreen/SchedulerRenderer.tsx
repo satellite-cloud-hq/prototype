@@ -7,10 +7,8 @@ import Earth from "../../Three/Earth";
 import { satellitesType, simulationType } from "../../../utils/types";
 
 export default function SchedulerRenderer({
-  simulation,
   schedulerData,
 }: {
-  simulation: simulationType | null;
   schedulerData: {
     start_date_time: string;
     end_date_time: string;
@@ -21,10 +19,6 @@ export default function SchedulerRenderer({
     }[];
   } | null;
 }) {
-  const satellitesData =
-    schedulerData !== null
-      ? schedulerData.passes.map((pass) => pass.satellite)
-      : [];
   return (
     <Canvas
       gl={{
@@ -44,19 +38,14 @@ export default function SchedulerRenderer({
     >
       <OrbitControls />
       <group rotation={[0, 0, (23.4 * Math.PI) / 180]}>
-        <Earth rotationSpeed={0.001} />
-        {satellitesData.map((satellite) => {
-          return (
-            <Orbit
-              key={satellite.id}
-              simulation={simulation}
-              satellites={satellite}
-            />
-          );
-        })}
+        <Earth rotationSpeed={0.0} />
+        {schedulerData !== null &&
+          schedulerData.passes.map((schedule) => {
+            return <Orbit key={schedule.satellite.id} schedule={schedule} />;
+          })}
       </group>
-      <directionalLight position={[-2, 0, 0]} intensity={2.0} />
-      <ambientLight intensity={0.55} />
+      <directionalLight position={[2, 0, 0]} intensity={8.0} />
+      <ambientLight intensity={0.15} />
     </Canvas>
   );
 }

@@ -1,26 +1,32 @@
 import React, { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
+import { useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import {
   currentSimulationTimeAlphaAtom,
   currentSimulationTimeAtom,
-  getCurrentSimulationTimeAtom,
   nextSimulationTimeAtom,
 } from "../../utils/atoms";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
-interface SimulationDataPoint {
-  _time: string;
-  spacecraft_quaternion_i2b_w: number;
-  spacecraft_quaternion_i2b_x: number;
-  spacecraft_quaternion_i2b_y: number;
-  spacecraft_quaternion_i2b_z: number;
-}
+import { calculateEarthRotation } from "../../utils/calculateEarthRotation";
 
 export default function Satellite({ simulationResult }) {
+  // Load Earth Texture
+  const earthTexture = useTexture("/textures/00_earthmap1k.jpg");
+  const earthCloudsTexture = useTexture("/textures/04_earthcloudmap.jpg");
+
+  const earthMesh = useRef<THREE.Mesh>(null);
+  const earthCloudsMesh = useRef<THREE.Mesh>(null);
+
+  // Load Satellite Model
+  const satelliteModel = useLoader(GLTFLoader, "/models/satellite.glb");
+
+  // References to the satellite model and gropu
   const groupRef = useRef<THREE.Group>(null);
+  const satelliteRef = useRef<THREE.Group>(null);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [quaternion] = useState(() => new THREE.Quaternion());
 
@@ -28,11 +34,11 @@ export default function Satellite({ simulationResult }) {
   const [nextTime, setNextTime] = useAtom(nextSimulationTimeAtom);
   const [alpha, setAlpha] = useAtom(currentSimulationTimeAlphaAtom);
 
-  const satelliteModel = useLoader(GLTFLoader, "/models/satellite.glb");
   useFrame(() => {
     if (
-      !groupRef.current ||
+      !satelliteRef.current ||
       !simulationResult ||
+      !groupRef.current ||
       simulationResult.length === 0
     ) {
       return;
@@ -42,8 +48,9 @@ export default function Satellite({ simulationResult }) {
 
     // Get quaternion values
     const current = simulationResult[currentIndex];
-    setCurrentTime(current._time);
     const next = simulationResult[nextIndex];
+    setCurrentSimulation(current);
+    setCurrentTime(current._time);
     setNextTime(next._time);
 
     // Create quaternions for interpolation
@@ -62,25 +69,33 @@ export default function Satellite({ simulationResult }) {
 
     // Interpolate and apply rotation
     quaternion.slerpQuaternions(currentQuat, nextQuat, alpha);
-    groupRef.current.quaternion.copy(quaternion);
+    satelliteRef.current.quaternion.copy(quaternion);
 
     // update positions
-    // groupRef.current.position.set(-y, z, -x);
     const currentPos = {
-      x: -simulationResult[currentIndex]["spacecraft_position_i_y[m]"] / 1e6,
-      y: simulationResult[currentIndex]["spacecraft_position_i_z[m]"] / 1e6,
-      z: -simulationResult[currentIndex]["spacecraft_position_i_x[m]"] / 1e6,
+      x: -simulationResult[currentIndex]["spacecraft_position_ecef_x[m]"] / 1e6,
+      y: simulationResult[currentIndex]["spacecraft_position_ecef_z[m]"] / 1e6,
+      z: simulationResult[currentIndex]["spacecraft_position_ecef_y[m]"] / 1e6,
     };
 
     const nextPos = {
-      x: -simulationResult[nextIndex]["spacecraft_position_i_y[m]"] / 1e6,
-      y: simulationResult[nextIndex]["spacecraft_position_i_z[m]"] / 1e6,
-      z: -simulationResult[nextIndex]["spacecraft_position_i_x[m]"] / 1e6,
+      x: -simulationResult[nextIndex]["spacecraft_position_ecef_x[m]"] / 1e6,
+      y: simulationResult[nextIndex]["spacecraft_position_ecef_z[m]"] / 1e6,
+      z: simulationResult[nextIndex]["spacecraft_position_ecef_y[m]"] / 1e6,
     };
 
-    groupRef.current.position.lerpVectors(
+    satelliteRef.current.position.lerpVectors(
       new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z),
       new THREE.Vector3(nextPos.x, nextPos.y, nextPos.z),
+      alpha
+    );
+
+    // Update Earth and Satellite rotation
+    const currentEarthRotation = calculateEarthRotation(current._time);
+    const nextEarthRotation = calculateEarthRotation(next._time);
+    groupRef.current.rotation.y = THREE.MathUtils.lerp(
+      currentEarthRotation,
+      nextEarthRotation,
       alpha
     );
 
@@ -102,11 +117,27 @@ export default function Satellite({ simulationResult }) {
   }, [simulationResult]);
 
   return (
-    simulationResult !== null &&
-    simulationResult.length > 0 && (
+    <group rotation={[0, 0, (23.4 * Math.PI) / 180]}>
       <group ref={groupRef}>
-        <primitive object={satelliteModel.scene} scale={0.0001} />
+        <mesh ref={earthMesh}>
+          <icosahedronGeometry args={[6.378, 12]} />
+          <meshStandardMaterial map={earthTexture} />
+        </mesh>
+        <mesh scale={1.003} ref={earthCloudsMesh}>
+          <icosahedronGeometry args={[6.378, 12]} />
+          <meshStandardMaterial
+            map={earthCloudsTexture}
+            transparent={true}
+            opacity={0.5}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        {simulationResult !== null && simulationResult.length > 0 && (
+          <group ref={satelliteRef}>
+            <primitive object={satelliteModel.scene} scale={0.0001} />
+          </group>
+        )}
       </group>
-    )
+    </group>
   );
 }
