@@ -68,13 +68,18 @@ services:
       - "8920:80" 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - app:/campaign/app/
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
     networks:
+      - default
       - control
 
 volumes:
   grafana-storage:
+  app:
+    name: prototype-app
+
 
 networks:
   control:

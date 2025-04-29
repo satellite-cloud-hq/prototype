@@ -8,7 +8,6 @@ services:
      - s2e-log:/root/aobc-sils/s2e/logs/
    networks:
       control:
-      campaign:
 
   simulation-logger:
     container_name: simulation-logger-${CAMPAIGN_ID}
@@ -21,7 +20,6 @@ services:
       - CAMPAIGN_START_TIMESTAMP_MS=${CAMPAIGN_START_TIMESTAMP_MS}
     networks:
       control:
-      campaign:
     depends_on:
       - simulator
 
@@ -36,7 +34,6 @@ services:
       - CAMPAIGN_START_TIMESTAMP_MS=${CAMPAIGN_START_TIMESTAMP_MS}
     networks:
       control:
-      campaign:
     depends_on:
       - simulator
 
@@ -46,15 +43,29 @@ services:
       dockerfile: kble/Dockerfile
     environment:
       - CAMPAIGN_ID=${CAMPAIGN_ID}
-    networks:
-      campaign:
     depends_on:
       - tlmcmd-bridge
-    
+
+  mqtt-broker:
+    container_name: mqtt-broker-${CAMPAIGN_ID}
+    image: eclipse-mosquitto:latest
+
+  app-runner:
+    container_name: app-runner-${CAMPAIGN_ID}
+    build:
+      dockerfile: app-runner/Dockerfile
+    environment:
+      - CAMPAIGN_ID=${CAMPAIGN_ID}
+    volumes:
+      - app:/app
+    depends_on:
+      - simulator 
+
 volumes:
   tmtc-cargo-target:
   s2e-log:
-  app-upload: 
+  app:
+    name: prototype-app
 
 networks:
   control:

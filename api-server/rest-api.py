@@ -9,7 +9,7 @@ import os
 import zipfile
 from io import BytesIO
 
-SIMULATOR_API = 'http://simulator'
+SIMULATOR_API = 'http://controller'
 
 app = FastAPI()
 

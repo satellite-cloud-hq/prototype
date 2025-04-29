@@ -22,7 +22,7 @@ simluations = {}
 CUID_GENERATOR: Cuid = Cuid(length=10)
 
 APP_DIR = Path('./app')
-APP_DIR.mkdir(exist_ok=True)
+# APP_DIR.mkdir(exist_ok=True)
 
 S2E_LOG_DIR = Path('/s2e-logs/')
 
@@ -42,7 +42,7 @@ class Simulation:
     def __init__(self, condition: Dict):
         self.id = str(CUID_GENERATOR.generate())
 
-        filename = f"app-{self.id}.py"
+        filename = f"code-{self.id}.py"
         self.app_path = APP_DIR / filename
 
         self.start_datetime = datetime(2023, 2, 10)
@@ -54,6 +54,22 @@ class Simulation:
 
         self.queue = asyncio.Queue()
 
+        asyncio.create_task(self.create_process())
+        asyncio.create_task(self.stream_app())
+
+    def stop(self):
+
+        subprocess.Popen(
+            ["docker", "compose", 
+             "-p", f'campaign-{self.id}', 
+             "down",
+             "--volumes", "--remove-orphans",
+             ]
+        )
+
+        self.status = self.Status.STOPPED
+
+    async def create_process(self):
         cmd = [
            "docker", "compose",
            "-f", "compose.yaml",
@@ -68,47 +84,35 @@ class Simulation:
         })
         self.status = self.Status.RUNNING
 
-        proc = subprocess.Popen(cmd, env=env)
+        proc = await asyncio.create_subprocess_exec(*cmd, env=env)
+        try:
+            exit_code = await proc.wait()
+        finally:
+            self.stop()
 
-    def stop(self):
+    async def stream_app(self):
+        async def read_file(tag):
+            log_file = APP_DIR / f"{tag}-{self.id}.log"
+            while not log_file.exists():
+                await asyncio.sleep(1)
+            stream = log_file.open("rb")
 
-        subprocess.Popen(
-            ["docker", "compose", 
-             "-p", f'campaign-{self.id}', 
-             "down",
-             "--volumes", "--remove-orphans",
-             ]
-        )
-
-        self.status = self.Status.STOPPED
-
-    async def run_app_and_stream(self):
-        print('running app')
-        self.app_process = await asyncio.create_subprocess_exec(
-            "python", '-u', str(self.app_path),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-
-        async def read_stream(stream, tag):
-            while self.status == self.Status.RUNNING:
-                if not stream:
-                    break
-                line = await stream.readline()
+            while self.status == self.Status.INITIALIZED or self.status == self.Status.RUNNING:
+                line = stream.readline()
+                await asyncio.sleep(0.1)
                 if line:
+                    print(line)
                     await self.queue.put(f"event: {tag}\ndata: {line.decode().rstrip()}\n\n")
-                else:
-                    break
+            stream.close()
+            # log_file.unlink()
 
         await asyncio.gather(
-            read_stream(self.app_process.stdout, "stdout"),
-            read_stream(self.app_process.stderr, "stderr"),
+            read_file("stdout"),
+            read_file("stderr"),
         )
 
-        await self.app_process.wait()
         await self.queue.put("event: done\ndata: [execution finished]\n\n")
-        self.app_path.unlink()
-
+        # self.app_path.unlink()
 
     def to_dict(self):
         return {
