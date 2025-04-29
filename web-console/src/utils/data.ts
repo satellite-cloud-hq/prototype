@@ -149,7 +149,6 @@ const handleGetImages = async (simulationId: string) => {
     const res = await apiClient.get(`/simulations/${simulationId}/images`, {
       responseType: "arraybuffer",
     });
-    console.log(res);
     return res.data;
   } catch (error) {
     console.error(error);

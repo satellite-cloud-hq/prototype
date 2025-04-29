@@ -54,6 +54,8 @@ const getCurrentSimulationTimeAtom = atom((get) => {
   return null;
 });
 
+const currentSimulationAtom = atom<any>(null);
+
 export {
   schedulerAtom,
   getCurrentSimulationTimeAtom,
@@ -64,6 +66,7 @@ export {
   outputtLogAtom,
   appendOutputLogAtom,
   clearOutputLogAtom,
+  currentSimulationAtom,
 };
 
 // export {

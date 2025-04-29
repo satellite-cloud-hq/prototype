@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Tab, Tabs } from "@mui/material";
 import ImagesBoard from "./DashboardPanel/ImagesBoard";
-import { handleGetImages } from "../utils/data";
 import { useLoaderData } from "react-router";
 
 interface TabPanelProps {
@@ -13,7 +12,7 @@ interface TabPanelProps {
 export default function Grafana() {
   const [value, setValue] = React.useState(0);
   const { simulation, simulationResult } = useLoaderData();
-  const simulationId = simulation.id;
+  const simulationId = simulation ? simulation.id : "";
 
   const startTime =
     simulationResult && simulationResult.length > 0
@@ -75,7 +74,7 @@ export default function Grafana() {
             startTime ? getGrafanaTime(startTime) : "now-6h"
           }&to=${
             endTime ? getGrafanaTime(endTime) : "now"
-          }&timezone=utc&var-id=${simulationId}&kiosk`}
+          }&timezone=browser&var-id=${simulationId}&kiosk`}
           width="100%"
           height="100%"
         ></iframe>

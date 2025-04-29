@@ -34,4 +34,18 @@ const useLocalStorage = <T extends object>(key: string, initValue: T) => {
   return [value, setLocalStorageValue] as const;
 };
 
-export { useLocalStorage };
+const defaultFiles = {
+  "app.py": {
+    name: "app.py",
+    language: "python",
+    value:
+      '"""\n# This is a sample Python script.\n# You can run this script by using the command: python app.py\n"""\n\nprint("Hello, World!")\n',
+  },
+  "config.yaml": {
+    name: "config.yaml",
+    language: "yaml",
+    value: "",
+  },
+};
+
+export { useLocalStorage, defaultFiles };

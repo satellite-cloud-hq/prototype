@@ -6,7 +6,6 @@ import Earth from "../../Three/Earth";
 import Satellite from "../../Three/Satellite";
 
 export default function SimulationRenderer({ simulationResult }) {
-  console.log("Simulation List:", simulationResult);
   return (
     <Canvas
       gl={{

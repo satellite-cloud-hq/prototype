@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import {
+  currentSimulationAtom,
   currentSimulationTimeAlphaAtom,
   currentSimulationTimeAtom,
   nextSimulationTimeAtom,
@@ -32,6 +33,9 @@ export default function Satellite({ simulationResult }) {
 
   const [currentTime, setCurrentTime] = useAtom(currentSimulationTimeAtom);
   const [nextTime, setNextTime] = useAtom(nextSimulationTimeAtom);
+  const [currentSimulation, setCurrentSimulation] = useAtom(
+    currentSimulationAtom
+  );
   const [alpha, setAlpha] = useAtom(currentSimulationTimeAlphaAtom);
 
   useFrame(() => {
@@ -48,6 +52,8 @@ export default function Satellite({ simulationResult }) {
 
     // Get quaternion values
     const current = simulationResult[currentIndex];
+    setCurrentSimulation(current);
+    setCurrentTime(current._time);
     const next = simulationResult[nextIndex];
     setCurrentSimulation(current);
     setCurrentTime(current._time);

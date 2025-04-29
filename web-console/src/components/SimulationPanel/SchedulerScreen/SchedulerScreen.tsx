@@ -8,14 +8,13 @@ import { schedulerAtom } from "../../../utils/atoms";
 
 export default function SchedulerScreen() {
   const scheduler = useAtomValue(schedulerAtom);
-  console.log("Scheduler: ", scheduler);
 
   const fetcher = useFetcher();
   return (
     <div
       style={{
-        position: "relative",
-        flex: 1,
+        width: "100%",
+        height: "100%",
       }}
     >
       {/* <ButtonGroup sx={{ position: "absolute", top: 10, left: 10, zIndex: 1 }}>
