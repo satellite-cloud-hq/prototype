@@ -74,7 +74,7 @@ export default function Grafana() {
             startTime ? getGrafanaTime(startTime) : "now-6h"
           }&to=${
             endTime ? getGrafanaTime(endTime) : "now"
-          }&timezone=browser&var-id=${simulationId}&kiosk`}
+          }&timezone=utc&var-id=${simulationId}&kiosk`}
           width="100%"
           height="100%"
         ></iframe>

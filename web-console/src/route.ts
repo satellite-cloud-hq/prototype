@@ -73,9 +73,9 @@ async function loader({ params }: LoaderFunctionArgs) {
   |> filter(fn: (r) => 
     r["_field"] == "elapsed_time[s]" or
     r["_field"] =~ /^spacecraft_quaternion_i2b_[wxyz]$/ or 
-    r["_field"] == "spacecraft_position_i_x[m]" or 
-    r["_field"] == "spacecraft_position_i_y[m]" or 
-    r["_field"] == "spacecraft_position_i_z[m]" or 
+    r["_field"] == "spacecraft_position_ecef_x[m]" or 
+    r["_field"] == "spacecraft_position_ecef_y[m]" or 
+    r["_field"] == "spacecraft_position_ecef_z[m]" or 
     r["_field"] == "spacecraft_latitude[rad]" or
     r["_field"] == "spacecraft_longitude[rad]" or
     r["_field"] == "spacecraft_altitude[m]" or

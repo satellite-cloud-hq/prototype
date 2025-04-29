@@ -52,8 +52,6 @@ export default function Satellite({ simulationResult }) {
 
     // Get quaternion values
     const current = simulationResult[currentIndex];
-    setCurrentSimulation(current);
-    setCurrentTime(current._time);
     const next = simulationResult[nextIndex];
     setCurrentSimulation(current);
     setCurrentTime(current._time);

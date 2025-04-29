@@ -8,6 +8,7 @@ import { schedulerAtom } from "../../../utils/atoms";
 
 export default function SchedulerScreen() {
   const scheduler = useAtomValue(schedulerAtom);
+  console.log("Scheduler: ", scheduler);
 
   const fetcher = useFetcher();
   return (
