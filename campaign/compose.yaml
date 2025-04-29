@@ -27,8 +27,8 @@ services:
     container_name: tlmcmd-bridge-${CAMPAIGN_ID}
     build:
       dockerfile: tlmcmd-bridge/Dockerfile
-    volumes:
-      - tmtc-cargo-target:/tmtc/target
+    # volumes:
+    #   - tmtc-cargo-target:/tmtc/target # for development
     environment:
       - CAMPAIGN_ID=${CAMPAIGN_ID}
       - CAMPAIGN_START_TIMESTAMP_MS=${CAMPAIGN_START_TIMESTAMP_MS}
@@ -62,7 +62,7 @@ services:
       - simulator 
 
 volumes:
-  tmtc-cargo-target:
+  # tmtc-cargo-target:
   s2e-log:
   app:
     name: prototype-app
