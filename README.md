@@ -10,7 +10,8 @@ https://satellite-cloud-hq.github.io/prototype/
 ## 実行
 ```
 $ git submodule update --init --recursive
-$ docker-compose up -d
+$ docker network create control
+$ docker compose up
 ```
 http://localhost:5173/ からwebconsoleを確認
 
