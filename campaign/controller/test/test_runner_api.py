@@ -23,12 +23,14 @@ with test_script_path.open("rb") as file:
     simulation_id = data["id"]
 
 try:
-    with httpx.stream("GET", f'{server}/{simulation_id}/output', timeout=5) as response:
+    with httpx.stream("GET", f'{server}/{simulation_id}/output', timeout=100) as response:
         print(response.status_code)
         for line in response.iter_lines():
             print(line)
 except httpx.ReadTimeout:
-    pass
+    print("Timeout occurred while reading the response.")
+
+time.sleep(100)
 
 response = httpx.post(f'{server}/{simulation_id}/stop')
 print(response.status_code, response.text)

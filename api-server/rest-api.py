@@ -11,7 +11,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 import sys
 import io
 
-SIMULATOR_API = 'http://simulator'
+SIMULATOR_API = 'http://controller'
 
 app = FastAPI()
 

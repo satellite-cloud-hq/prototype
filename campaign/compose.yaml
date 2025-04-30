@@ -1,0 +1,73 @@
+services:
+
+  simulator:
+   container_name: simulator-${CAMPAIGN_ID}
+   build:
+    dockerfile: simulator/Dockerfile
+   volumes:
+     - s2e-log:/root/aobc-sils/s2e/logs/
+   networks:
+      control:
+
+  simulation-logger:
+    container_name: simulation-logger-${CAMPAIGN_ID}
+    build:
+      dockerfile: simulation-logger/Dockerfile
+    volumes:
+      - s2e-log:/s2e-log
+    environment:
+      - CAMPAIGN_ID=${CAMPAIGN_ID}
+      - CAMPAIGN_START_TIMESTAMP_MS=${CAMPAIGN_START_TIMESTAMP_MS}
+    networks:
+      control:
+    depends_on:
+      - simulator
+
+  tlmcmd-bridge:
+    container_name: tlmcmd-bridge-${CAMPAIGN_ID}
+    build:
+      dockerfile: tlmcmd-bridge/Dockerfile
+    # volumes:
+    #   - tmtc-cargo-target:/tmtc/target # for development
+    environment:
+      - CAMPAIGN_ID=${CAMPAIGN_ID}
+      - CAMPAIGN_START_TIMESTAMP_MS=${CAMPAIGN_START_TIMESTAMP_MS}
+    networks:
+      control:
+    depends_on:
+      - simulator
+
+  kble:
+    container_name: kble-${CAMPAIGN_ID}
+    build:
+      dockerfile: kble/Dockerfile
+    environment:
+      - CAMPAIGN_ID=${CAMPAIGN_ID}
+    depends_on:
+      - tlmcmd-bridge
+
+  mqtt-broker:
+    container_name: mqtt-broker-${CAMPAIGN_ID}
+    image: eclipse-mosquitto:latest
+
+  app-runner:
+    container_name: app-runner-${CAMPAIGN_ID}
+    build:
+      dockerfile: app-runner/Dockerfile
+    environment:
+      - CAMPAIGN_ID=${CAMPAIGN_ID}
+    volumes:
+      - app:/app
+    depends_on:
+      - simulator 
+
+volumes:
+  # tmtc-cargo-target:
+  s2e-log:
+  app:
+    name: prototype-app
+
+networks:
+  control:
+    external: true
+  campaign:

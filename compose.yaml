@@ -61,22 +61,33 @@ services:
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=admin-token
     volumes:
       - ./log-db/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - control
 
-  simulator:
-    container_name: simulator
+  controller:
+    container_name: controller
     build:
-      context: ./simulator
-      dockerfile: Dockerfile
-    ports:
-      - "8900:8900"
-      - "8910:8910"
-      - "8920:80"
+      context: ./campaign
+      dockerfile: controller/Dockerfile
     tty: true
-    platform: linux/x86_64
+    ports:
+      - "8920:80" 
     volumes:
-      - ./simulator/tmtc-c2a:/root/tmtc-c2a
-      - cargo-target:/root/tmtc-c2a/target
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - app:/campaign/app/
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    networks:
+      - default
+      - control
 
 volumes:
   grafana-storage:
-  cargo-target:
+  app:
+    name: prototype-app
+
+
+networks:
+  control:
+    external: true
+  

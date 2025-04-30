@@ -42,9 +42,9 @@ pub struct Args {
     #[clap(long, env, default_value_t = 1.0)]
     traces_sample_rate: f32,
     #[clap(env, long)]
-    simulation_id: String,
+    campaign_id: String,
     #[clap(env, long)]
-    simulation_start_ms: u64,
+    campaign_start_timestamp_ms: u64,
     #[clap(long, env)]
     sentry_dsn: Option<sentry::types::Dsn>,
     #[clap(env, long)]
@@ -122,7 +122,7 @@ async fn main() -> Result<()> {
 
     let all_tmiv_names = tlm_registry.all_tmiv_names();
     let last_tmiv_store = Arc::new(LastTmivStore::new(all_tmiv_names));
-    let store_to_influxdb_hook = influxdb::StoreToInfluxDBHook::new(args.simulation_id, args.simulation_start_ms);
+    let store_to_influxdb_hook = influxdb::StoreToInfluxDBHook::new(args.campaign_id, args.campaign_start_timestamp_ms);
     let tlm_handler = handler::Builder::new()
         .before_hook(store_to_influxdb_hook)
         .option_layer(recorder_layer.clone())
