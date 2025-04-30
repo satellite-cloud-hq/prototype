@@ -31,13 +31,19 @@ services:
       - "3000:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
+      - ./grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./grafana/dashboard-settings.yaml:/etc/grafana/provisioning/dashboards/dashboard-settings.yaml
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
     environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=adminadmin
       - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
       - GF_SECURITY_ALLOW_EMBEDDING=true
       - GF_SECURITY_COOKIE_SAMESITE=none
       - GF_SECURITY_COOKIE_SECURE=true
-    #depends_on:
-    #- influxdb logdbが出来次第追記
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+    depends_on:
+      - log-db
 
   log-db:
     image: influxdb:2.7.11

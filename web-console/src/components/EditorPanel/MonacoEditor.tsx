@@ -14,25 +14,15 @@ import { PlayArrow, Stop } from "@mui/icons-material";
 
 import Editor from "@monaco-editor/react";
 import { handleSchedulePost } from "../../utils/data";
-import { useLocalStorage } from "../../utils/customHooks";
+import { defaultFiles, useLocalStorage } from "../../utils/customHooks";
 import { useLoaderData, useSearchParams, useSubmit } from "react-router";
+import { schedulerAtom } from "../../utils/atoms";
+import { useSetAtom } from "jotai";
 
-const defaultFiles = {
-  "app.py": {
-    name: "app.py",
-    language: "python",
-    value:
-      '"""\n# This is a sample Python script.\n# You can run this script by using the command: python app.py\n"""\n\nprint("Hello, World!")\n',
-  },
-  "config.yaml": {
-    name: "config.yaml",
-    language: "yaml",
-    value: "",
-  },
-};
 export default function MonacoEditor() {
   const submit = useSubmit();
   const { simulation, simulationsList } = useLoaderData();
+  const uploadScheduler = useSetAtom(schedulerAtom);
   const simulationId = simulation?.id;
   const running = simulation?.status === "running";
   const [fileName, setFileName] = useState("app.py");
@@ -144,7 +134,7 @@ export default function MonacoEditor() {
           <Select
             value={simulationId || ""}
             label="id"
-            onChange={async (event) => {
+            onChange={(event) => {
               submit(
                 {
                   action: "switch",
@@ -168,10 +158,11 @@ export default function MonacoEditor() {
           variant="contained"
           color="inherit"
           onClick={() => {
-            handleSchedulePost(files["config.yaml"].value)
+            const res = handleSchedulePost(files["config.yaml"].value)
               .then((res) => {
                 console.log("Response:", res);
                 alert("Config file uploaded successfully");
+                uploadScheduler(res);
               })
               .catch((error) => {
                 alert("Error uploading config file."); //TODO show error message

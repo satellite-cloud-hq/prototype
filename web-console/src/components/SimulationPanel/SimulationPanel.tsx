@@ -1,17 +1,20 @@
+import { Tabs, Tab, Box } from "@mui/material";
 import React from "react";
-import { Button, ButtonGroup, Stack } from "@mui/material";
-import SimulationRenderer from "./SimulationRenderer";
-import { satellitesType, simulationType } from "../../utils/types";
-import { useFetcher, useLoaderData } from "react-router";
+import SchedulerScreen from "./SchedulerScreen/SchedulerScreen";
+import SimulationScreen from "./SimulationScreen/SimulationScreen";
 
 export default function SimulationPanel() {
-  const {
-    simulation,
-    satellites,
-  }: { simulation: simulationType | null; satellites: satellitesType[] } =
-    useLoaderData();
+  function a11yProps(index: number) {
+    return {
+      id: `simple-tab-${index}`,
+      "aria-controls": `simple-tabpanel-${index}`,
+    };
+  }
 
-  const fetcher = useFetcher();
+  const [value, setValue] = React.useState(0);
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
   return (
     <div
       style={{
@@ -20,27 +23,28 @@ export default function SimulationPanel() {
         height: "100%",
       }}
     >
-      <ButtonGroup sx={{ position: "absolute", top: 10, left: 10, zIndex: 1 }}>
-        <Button
-          onClick={() => {
-            if (simulation?.id) {
-              fetcher.load(`/${simulation.id}`);
-            }
+      <Box sx={{ borderBottom: 1, borderColor: "divider", bgcolor: "gray" }}>
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          textColor="inherit"
+          indicatorColor="secondary"
+          sx={{
+            "& .MuiTab-root": {
+              color: "white",
+            },
+            "& .MuiTabs-indicator": {
+              backgroundColor: "white",
+            },
           }}
         >
-          Get Satellites
-        </Button>
-        <Button
-          onClick={() => {
-            if (simulation?.id) {
-              fetcher.load(`/${simulation.id}`);
-            }
-          }}
-        >
-          Get Ground Stations
-        </Button>
-      </ButtonGroup>
-      <SimulationRenderer simulation={simulation} satellitesData={satellites} />
+          <Tab label="Scheduler" {...a11yProps(0)} />
+          <Tab label="Simulation" {...a11yProps(1)} />
+        </Tabs>
+      </Box>
+
+      {value === 0 && <SchedulerScreen />}
+      {value === 1 && <SimulationScreen />}
     </div>
   );
 }

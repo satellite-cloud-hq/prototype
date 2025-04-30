@@ -9,6 +9,7 @@ import App from "./App.tsx";
 import {
   handleReousrcesGroundStationsGet,
   handleReousrcesSatellitesGet,
+  handleSchedulePost,
   handleSimulationsGet,
   handleSimulationsGetAll,
   handleSimulationsPost,
@@ -16,6 +17,7 @@ import {
 } from "./utils/data.ts";
 
 import { satellitesType, simulationType } from "./utils/types.ts";
+import { queryApi } from "./utils/influxClient.ts";
 
 export const router = createBrowserRouter([
   {
@@ -65,6 +67,42 @@ async function loader({ params }: LoaderFunctionArgs) {
     : null;
   console.log(simulation);
 
+  const fluxQuery = `from(bucket: "simulation")
+  |> range(start: 0)
+  |> filter(fn: (r) => r["_measurement"] == "${id}")
+  |> filter(fn: (r) => 
+    r["_field"] == "elapsed_time[s]" or
+    r["_field"] =~ /^spacecraft_quaternion_i2b_[wxyz]$/ or 
+    r["_field"] == "spacecraft_position_i_x[m]" or 
+    r["_field"] == "spacecraft_position_i_y[m]" or 
+    r["_field"] == "spacecraft_position_i_z[m]" or 
+    r["_field"] == "spacecraft_latitude[rad]" or
+    r["_field"] == "spacecraft_longitude[rad]" or
+    r["_field"] == "spacecraft_altitude[m]" or
+    r["_field"] == "spacecraft_velocity_i_x[m/s]" or
+    r["_field"] == "spacecraft_velocity_i_y[m/s]" or
+    r["_field"] == "spacecraft_velocity_i_z[m/s]" or
+    r["_field"] == "spacecraft_acceleration_i_x[m/s2]" or
+    r["_field"] == "spacecraft_acceleration_i_y[m/s2]" or
+    r["_field"] == "spacecraft_acceleration_i_z[m/s2]" 
+  )
+  |> group(columns: ["_measurement", "_field"]) // Group by measurement and field
+  |> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
+  |> pivot(
+    rowKey: ["_time"],
+    columnKey: ["_field"],
+    valueColumn: "_value"
+  )
+  |> yield(name: "mean")`;
+
+  const simulationResult =
+    simulation && !simulation.running
+      ? await queryApi.collectRows(fluxQuery)
+      : null;
+  if (simulation) {
+    console.log("Simulation result:", simulationResult);
+  }
+
   const res = await handleSimulationsGetAll();
   const simulationsList: simulationType[] = res.items;
 
@@ -75,6 +113,7 @@ async function loader({ params }: LoaderFunctionArgs) {
 
   return {
     simulation,
+    simulationResult,
     simulationsList,
     satellites: satellites,
     groundStations: groundStations.items,

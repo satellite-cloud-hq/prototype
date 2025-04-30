@@ -25,3 +25,4 @@ pyenv
 Vagrantfile
 
 log-db/influxdb_data
+.vscode/
