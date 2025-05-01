@@ -44,8 +44,8 @@ export default function SchedulerRenderer({
             return <Orbit key={schedule.satellite.id} schedule={schedule} />;
           })}
       </group>
-      <directionalLight position={[2, 0, 0]} intensity={8.0} />
-      <ambientLight intensity={0.15} />
+      <directionalLight position={[2, 0, 0]} intensity={4.0} />
+      <ambientLight intensity={0.35} />
     </Canvas>
   );
 }

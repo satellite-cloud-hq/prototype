@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import Earth from "../../Three/Earth";
-import Satellite from "../../Three/Satellite";
+import EarthSatellite from "./EarthSatellite";
 
 export default function SimulationRenderer({ simulationResult }) {
   return (
@@ -24,8 +24,7 @@ export default function SimulationRenderer({ simulationResult }) {
       }}
     >
       <OrbitControls />
-      {/* <Earth rotationSpeed={0} /> */}
-      <Satellite simulationResult={simulationResult} />
+      <EarthSatellite simulationResult={simulationResult} />
       <directionalLight position={[2, 0, 0]} intensity={4.0} />
       <ambientLight intensity={0.25} />
     </Canvas>
