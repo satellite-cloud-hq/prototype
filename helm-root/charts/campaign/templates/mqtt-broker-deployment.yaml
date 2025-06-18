@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mqtt-broker-{{ .Values.campaignId }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mqtt-broker
+  template:
+    metadata:
+      labels:
+        app: mqtt-broker
+    spec:
+      containers:
+        - name: mqtt-broker
+          image: {{ .Values.images.mqttBroker }}

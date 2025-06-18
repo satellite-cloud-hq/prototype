@@ -1,19 +1,44 @@
 # プロトタイプ
 
-# API
-
-https://satellite-cloud-hq.github.io/prototype/
-
-
 # 開発
 
 ## 実行
-```
-$ git submodule update --init --recursive
-$ docker network create control
-$ docker compose up
-```
-http://localhost:5173/ からwebconsoleを確認
+(3まで初回のみ)
+1. Docker Desktop の Kubernetes を有効にする
+    - Docker Desktop を起動
+    - 右上の歯車（⚙）→「Kubernetes」タブをクリック
+    - 「Kubernetes を有効にする（Enable Kubernetes）」にチェック
+    - 「Apply & Restart」をクリックして反映
+    - 数分待つとクラスターが自動で起動
+2. クラスター接続を確認する
+    ```
+    $ kubectl config current-context
+    docker-desktop
+    ```
+    となればOK
+3. docker buildする(とりあえず. 今後は組織で一つにした方が良さそう)
+    ```
+    $ git submodule update --init --recursive
+    $ cd campaign
+    $ docker compose build
+
+    $ cd ..
+    $ docker compose build
+    ```
+(ここから毎回)
+4. helmインストールをする
+    ```
+    $ cd helm-root
+    $ helm install satellite-cloud .
+    $ kubectl port-forward service/api-server 8000:8000
+    ```
+    2回目以降は
+    ```
+    $ helm upgrade --install satellite-cloud .
+    $ kubectl port-forward service/api-server 8000:8000
+    ```
+
+http://localhost:30002/ からwebconsoleを確認
 
 ### シミュレータ
 ```

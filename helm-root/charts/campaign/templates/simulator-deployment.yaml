@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulator-{{ .Values.campaignId }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simulator
+  template:
+    metadata:
+      labels:
+        app: simulator
+    spec:
+      containers:
+        - name: simulator
+          image: {{ .Values.images.simulator }}
+          imagePullPolicy: Never
+          volumeMounts:
+            - name: s2e-log
+              mountPath: /root/aobc-sils/s2e/logs/
+      volumes:
+        - name: s2e-log
+          persistentVolumeClaim:
+            claimName: s2e-log-pvc

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controller
+  template:
+    metadata:
+      labels:
+        app: controller
+    spec:
+      containers:
+      - name: controller
+        image: {{ .Values.controller.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: {{ .Values.controller.port }}
+        env:
+        - name: DOCKER_HOST
+          value: unix:///var/run/docker.sock
+        volumeMounts:
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
+      volumes:
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: controller
+spec:
+  type: NodePort
+  selector:
+    app: controller
+  ports:
+    - port: 8920
+      targetPort: {{ .Values.controller.port }}
+      nodePort: {{ .Values.controller.nodePort }}

@@ -11,9 +11,9 @@ from fastapi import WebSocket, WebSocketDisconnect
 import sys
 import io
 
-SIMULATOR_API = 'http://controller'
+SIMULATOR_API = 'http://localhost:30005'
 
-app = FastAPI()
+app = FastAPI(debug=True)
 
 # CORS 設定
 app.add_middleware(
@@ -77,12 +77,30 @@ async def get_simulations():
     実行中および過去に実行したシミュレーションの一覧を取得する．
     """
     try:
-        async with AsyncClient() as client:
-            response = await client.get(SIMULATOR_API)
-        response.raise_for_status()
-        return response.json()
+        # async with AsyncClient() as client:
+        #     response = await client.get(SIMULATOR_API)
+        # response.raise_for_status()
+        # return response.json()
+        return {
+            "simulations": [
+                {
+                    "id": "sim_001",
+                    "status": "running",
+                    "start_time": "2023-10-01T00:00:00Z",
+                    "name": "Sample Simulation 1"
+                },
+                {
+                    "id": "sim_002", 
+                    "status": "completed",
+                    "start_time": "2023-09-30T12:00:00Z",
+                    "end_time": "2023-09-30T13:00:00Z",
+                    "name": "Sample Simulation 2"
+                }
+            ]
+        }
+        
     except HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=str(e.response.text))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/simulations")
 async def run_simulation(
@@ -190,7 +208,7 @@ async def websocket_repl(websocket: WebSocket, simulation_id: str):
         await websocket.send_text(f"Error: {str(e)}")
     
 @app.get("/simulations/{simulation_id}/images")
-async def get_simulation_output(simulation_id: str):
+async def get_simulation_image(simulation_id: str):
     """
     シミュレーション画像取得
     指定したシミュレーションにおける画像を取得する．

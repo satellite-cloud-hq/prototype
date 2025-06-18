@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-db
+  template:
+    metadata:
+      labels:
+        app: log-db
+    spec:
+      containers:
+      - name: log-db
+        image: {{ .Values.logDb.image }}
+        ports:
+        - containerPort: {{ .Values.logDb.port }}
+        env:
+        - name: DOCKER_INFLUXDB_INIT_MODE
+          value: setup
+        - name: DOCKER_INFLUXDB_INIT_USERNAME
+          value: {{ .Values.logDb.username }}
+        - name: DOCKER_INFLUXDB_INIT_PASSWORD
+          value: {{ .Values.logDb.password }}
+        - name: DOCKER_INFLUXDB_INIT_ORG
+          value: {{ .Values.logDb.org }}
+        - name: DOCKER_INFLUXDB_INIT_BUCKET
+          value: {{ .Values.logDb.bucket }}
+        - name: DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+          value: {{ .Values.logDb.token }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: log-db
+spec:
+  type: NodePort
+  selector:
+    app: log-db
+  ports:
+    - port: {{ .Values.logDb.port }}
+      targetPort: {{ .Values.logDb.port }}
+      nodePort: {{ .Values.logDb.nodePort }}

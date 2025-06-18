@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kble-{{ .Values.campaignId }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kble
+  template:
+    metadata:
+      labels:
+        app: kble
+    spec:
+      containers:
+        - name: kble
+          image: {{ .Values.images.kble }}
+          imagePullPolicy: Never
+          env:
+            - name: CAMPAIGN_ID
+              value: {{ .Values.campaignId | quote }}

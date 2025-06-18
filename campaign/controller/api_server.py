@@ -14,8 +14,18 @@ from datetime import datetime, timedelta
 from cuid2 import Cuid
 import os
 import signal
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+app = FastAPI(debug=True)
+
+# CORS 設定
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 必要に応じて特定のオリジンに制限
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 simluations = {}
 
@@ -26,7 +36,7 @@ APP_DIR = Path('./app')
 
 S2E_LOG_DIR = Path('/s2e-logs/')
 
-LOGDB_URL = 'http://log-db:8086/'
+LOGDB_URL = 'http://localhost:30004/'
 LOGDB_ORG = 'satellite-cloud'
 LOGDB_TOKEN = 'admin-token'
 

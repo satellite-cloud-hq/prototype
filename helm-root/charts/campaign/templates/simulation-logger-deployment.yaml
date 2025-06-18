@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulation-logger-{{ .Values.campaignId }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simulation-logger
+  template:
+    metadata:
+      labels:
+        app: simulation-logger
+    spec:
+      containers:
+        - name: simulation-logger
+          image: {{ .Values.images.simulationLogger }}
+          imagePullPolicy: Never
+          env:
+            - name: CAMPAIGN_ID
+              value: {{ .Values.campaignId | quote }}
+            - name: CAMPAIGN_START_TIMESTAMP_MS
+              value: {{ .Values.campaignStartTimestampMs | quote }}
+          volumeMounts:
+            - name: s2e-log
+              mountPath: /s2e-log
+      volumes:
+        - name: s2e-log
+          persistentVolumeClaim:
+            claimName: s2e-log-pvc

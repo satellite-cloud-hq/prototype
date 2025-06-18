@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-runner-{{ .Values.campaignId }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-runner
+  template:
+    metadata:
+      labels:
+        app: app-runner
+    spec:
+      # app-runner deployment template
+      containers:
+        - name: app-runner
+          image: {{ .Values.images.appRunner }}
+          imagePullPolicy: Never
+          command: ["/bin/sh"]
+          args: ["-c", "echo 'Starting debug...'; pwd; ls -la; ls -la /app; whoami; env; sleep 600"]
+          env:
+            - name: CAMPAIGN_ID
+              value: {{ .Values.campaignId | quote }}
+          volumeMounts:
+            - name: app
+              mountPath: /app
+      volumes:
+        - name: app
+          persistentVolumeClaim:
+            claimName: app-pvc

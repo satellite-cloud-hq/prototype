@@ -1,0 +1,37 @@
+apiServer:
+  image: api-server:latest
+  port: 8000
+  nodePort: 30001
+
+webConsole:
+  image: web-console:latest
+  port: 5173
+  nodePort: 30002
+
+grafana:
+  image: grafana/grafana:latest
+  port: 3000
+  nodePort: 30003
+  adminUser: admin
+  adminPassword: adminadmin
+
+logDb:
+  image: influxdb:2.7.11
+  port: 8086
+  nodePort: 30004
+  username: admin
+  password: adminadmin
+  org: satellite-cloud
+  bucket: simulation
+  token: admin-token
+
+controller:
+  image: prototype-controller:latest
+  port: 80
+  nodePort: 30005
+  campaignId: abc123
+  startTimestampMs: "1723456789"
+
+volumes:
+  grafanaStorage: {}
+  app: {}

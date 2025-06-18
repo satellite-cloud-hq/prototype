@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tlmcmd-bridge-{{ .Values.campaignId }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tlmcmd-bridge
+  template:
+    metadata:
+      labels:
+        app: tlmcmd-bridge
+    spec:
+      containers:
+        - name: tlmcmd-bridge
+          image: {{ .Values.images.tlmcmdBridge }}
+          imagePullPolicy: Never
+          env:
+            - name: CAMPAIGN_ID
+              value: {{ .Values.campaignId | quote }}
+            - name: CAMPAIGN_START_TIMESTAMP_MS
+              value: {{ .Values.campaignStartTimestampMs | quote }}

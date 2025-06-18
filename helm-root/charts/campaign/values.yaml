@@ -1,0 +1,23 @@
+campaignId: "abc123"
+campaignStartTimestampMs: "0000000000000"
+
+images:
+  appRunner: campaign-app-runner:latest
+  simulator: campaign-simulator:latest
+  tlmcmdBridge: campaign-tlmcmd-bridge:latest
+  kble: campaign-kble:latest
+  simulationLogger: campaign-simulation-logger:latest
+  mqttBroker: eclipse-mosquitto
+
+volumes:
+  s2eLog: s2e-log
+  app: prototype-app
+
+network:
+  controlNetwork: control
+
+sharedEnv:
+  - name: CAMPAIGN_ID
+    value: "{{ .Values.campaignId }}"
+  - name: CAMPAIGN_START_TIMESTAMP_MS
+    value: "{{ .Values.campaignStartTimestampMs }}"
